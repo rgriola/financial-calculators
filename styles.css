@@ -12,6 +12,8 @@
     --border-color: #e2e8f0;
     --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-large: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    --primary-blue: #3b82f6;
 }
 
 * {
@@ -29,9 +31,153 @@ body {
     line-height: 1.5;
 }
 
-.calculator-container {
-    max-width: 500px;
+/* App Container - Main wrapper */
+.app-container {
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 15px;
+}
+
+/* Main Header - Standalone at top */
+.main-header {
+    text-align: center;
+    margin-bottom: 20px;
+    background: var(--surface-light);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow-light);
+    backdrop-filter: blur(10px);
+}
+
+.main-header h1 {
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.main-header .subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+/* Compact Mortgage Rates - Horizontal layout */
+.mortgage-rates.compact {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%);
+    border: 2px solid rgba(16, 185, 129, 0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.compact-rates-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.rates-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-green);
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.rates-inline {
+    display: flex;
+    gap: 15px;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.rate-item-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(16, 185, 129, 0.1);
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.rate-label-inline {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.rate-value-inline {
+    font-size: 0.9rem;
+    color: var(--accent-green);
+    font-weight: 700;
+}
+
+/* Fixed refresh button - make it small and static */
+.refresh-btn-compact {
+    width: 24px;           /* Fixed width */
+    height: 24px;          /* Fixed height */
+    min-width: 24px;       /* Prevent shrinking */
+    max-width: 24px;       /* Prevent growing */
+    border: none;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;            /* Remove all padding */
+    margin: 0;             /* Remove all margin */
+    flex-shrink: 0;        /* Prevent flex shrinking */
+    flex-grow: 0;          /* Prevent flex growing */
+    box-sizing: border-box;
+}
+
+.refresh-btn-compact svg {
+    width: 14px;           /* Fixed SVG size */
+    height: 14px;          /* Fixed SVG size */
+    fill: var(--accent-green);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;        /* Prevent shrinking */
+}
+
+.refresh-btn-compact:hover {
+    background: var(--accent-green);
+    transform: scale(1.05);
+}
+
+.refresh-btn-compact:hover svg {
+    fill: white;
+    transform: rotate(180deg);
+}
+
+.refresh-btn-compact:focus {
+    outline: 2px solid var(--accent-green);
+    outline-offset: 2px;
+}
+
+.rates-date-compact {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    flex-shrink: 0;        /* Prevent shrinking */
+    white-space: nowrap;   /* Prevent text wrapping */
+}
+
+/* Two Column Layout */
+.calculator-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    align-items: start;
+}
+
+/* Calculator Container - Left Column */
+.calculator-container {
     background: var(--surface-light);
     border-radius: 12px;
     padding: 24px;
@@ -39,26 +185,7 @@ body {
     backdrop-filter: blur(10px);
 }
 
-/* Header Styles - More Compact */
-header {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-h1 {
-    color: var(--text-primary);
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin-bottom: 6px;
-}
-
-.subtitle {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    margin-bottom: 0;
-}
-
-/* Message Display - Smaller */
+/* Message Display */
 .message {
     padding: 8px 12px;
     border-radius: 6px;
@@ -91,7 +218,7 @@ h1 {
     display: none;
 }
 
-/* Form Styles - Compact */
+/* Form Styles */
 .mortgage-form {
     margin-bottom: 20px;
 }
@@ -124,7 +251,6 @@ h1 {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* Input validation states - CSP compliant */
 .form-group input.valid {
     border-color: var(--accent-green);
     background: rgba(16, 185, 129, 0.05);
@@ -143,7 +269,7 @@ h1 {
     font-style: italic;
 }
 
-/* Button Styles - Compact */
+/* Button Styles */
 .button-group {
     display: flex;
     gap: 10px;
@@ -172,10 +298,6 @@ button {
     box-shadow: var(--shadow-medium);
 }
 
-.calculate-btn:active {
-    transform: translateY(0);
-}
-
 .reset-btn {
     background: #6b7280;
     color: white;
@@ -191,7 +313,7 @@ button:focus {
     outline-offset: 2px;
 }
 
-/* Result Display - Always Visible with Placeholders */
+/* Result Display */
 .result {
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
     border: 2px solid rgba(102, 126, 234, 0.2);
@@ -200,36 +322,6 @@ button:focus {
     text-align: center;
     animation: fadeIn 0.5s ease-in;
     margin-top: 20px;
-}
-
-/* Placeholder styling */
-.placeholder {
-    color: var(--text-secondary) !important;
-    font-style: italic;
-    opacity: 0.7;
-}
-
-.payment-amount.placeholder {
-    color: var(--text-secondary) !important;
-}
-
-.interest-value.highlight.placeholder {
-    color: var(--text-secondary) !important;
-}
-
-/* Calculated values (removes placeholder styling) */
-.calculated {
-    color: inherit !important;
-    font-style: normal !important;
-    opacity: 1 !important;
-}
-
-.payment-amount.calculated {
-    color: var(--accent-blue) !important;
-}
-
-.interest-value.highlight.calculated {
-    color: var(--accent-blue) !important;
 }
 
 .result.hidden {
@@ -299,115 +391,133 @@ button:focus {
     font-weight: 600;
 }
 
-/* Interest Summary Section with Info Icons */
+/* Interest Summary Section - Original Working Version */
 .interest-summary {
-    background: rgba(102, 126, 234, 0.05);
-    border-radius: 6px;
-    padding: 15px;
-    margin-top: 15px;
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(59, 130, 246, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(59, 130, 246, 0.1);
 }
 
 .interest-summary h3 {
-    font-size: 1rem;
     color: var(--text-primary);
-    margin-bottom: 12px;
+    font-size: 1.1rem;
+    margin-bottom: 16px;
     text-align: center;
     font-weight: 600;
 }
 
 .interest-details {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
 }
 
 .interest-item {
-    text-align: center;
-    padding: 12px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
     background: white;
-    border-radius: 4px;
-    border: 1px solid rgba(102, 126, 234, 0.1);
+    border-radius: 6px;
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    box-shadow: var(--shadow-light);
 }
 
 .interest-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 6px;
+    gap: 8px;
 }
 
 .interest-label {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
     font-weight: 500;
 }
 
-.interest-value {
-    display: block;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    font-weight: 700;
-}
-
-.interest-value.highlight {
-    color: var(--accent-blue);
-    font-size: 1rem;
-}
-
-/* Info Icon Styling - Updated for SVG */
 .info-icon {
-    width: 18px;  /* Slightly larger for better visibility */
-    height: 18px;
-    border-radius: 3px;
-    border: 1.5px solid var(--accent-blue);
-    background: white;
-    color: var(--accent-blue);
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 50%;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    padding: 0;
+    color: var(--text-secondary);
     transition: all 0.2s ease;
-    padding: 2px;  /* Small padding for the SVG */
-    flex-shrink: 0;
 }
 
 .info-icon svg {
     width: 12px;
     height: 12px;
-    fill: currentColor;  /* Uses the parent's color */
-    transition: all 0.2s ease;
+    stroke: currentColor;
 }
 
 .info-icon:hover {
-    background: var(--accent-blue);
-    color: white;
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--primary-blue);
     transform: scale(1.1);
 }
 
 .info-icon:focus {
-    outline: 2px solid rgba(102, 126, 234, 0.3);
+    outline: 2px solid var(--primary-blue);
     outline-offset: 2px;
 }
 
-.info-icon:active {
-    transform: scale(0.95);
+.interest-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
 }
 
-/* Info Tooltip Styling */
+.interest-value.highlight {
+    color: var(--accent-red);
+    font-size: 1.1rem;
+}
+
+/* Placeholder and calculated states */
+.placeholder {
+    color: var(--text-secondary) !important;
+    font-style: italic;
+    opacity: 0.7;
+    font-weight: 400 !important;
+}
+
+.calculated {
+    color: inherit !important;
+    font-style: normal !important;
+    opacity: 1 !important;
+}
+
+.payment-amount.calculated {
+    color: var(--accent-blue) !important;
+    font-weight: 800 !important;
+}
+
+.interest-value.highlight.calculated {
+    color: var(--accent-red) !important;
+    font-weight: 800 !important;
+}
+
+/* Info Tooltip */
 .info-tooltip {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     background: white;
-    border: 2px solid var(--accent-blue);
     border-radius: 8px;
-    box-shadow: var(--shadow-medium);
+    box-shadow: var(--shadow-large);
+    border: 2px solid var(--primary-blue);
     z-index: 1000;
-    max-width: 300px;
-    width: 90%;
-    animation: tooltipFadeIn 0.2s ease-out;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow: hidden;
 }
 
 .info-tooltip.hidden {
@@ -415,248 +525,404 @@ button:focus {
 }
 
 .tooltip-content {
-    padding: 16px;
+    padding: 20px;
     position: relative;
 }
 
 .tooltip-close {
     position: absolute;
     top: 8px;
-    right: 8px;
-    background: none;
-    border: none;
-    font-size: 18px;
-    font-weight: bold;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 4px;
-    line-height: 1;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-.tooltip-close:hover {
-    background: rgba(102, 126, 234, 0.1);
-    color: var(--accent-blue);
-}
-
-.tooltip-text {
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: var(--text-primary);
-    margin-right: 20px;
-}
-
-.tooltip-text h4 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: var(--accent-blue);
-}
-
-.tooltip-text p {
-    margin-bottom: 8px;
-}
-
-.tooltip-text p:last-child {
-    margin-bottom: 0;
-}
-
-/* Tooltip Animation */
-@keyframes tooltipFadeIn {
-    from {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-}
-
-/* Overlay for tooltip */
-.tooltip-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    z-index: 999;
-}
-
-.tooltip-overlay.hidden {
-    display: none;
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Mortgage Rates Section */
-.mortgage-rates {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%);
-    border: 2px solid rgba(16, 185, 129, 0.2);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 20px;
-    animation: fadeIn 0.5s ease-in;
-}
-
-.mortgage-rates.hidden {
-    display: none;
-}
-
-.mortgage-rates.loading {
-    opacity: 0.7;
-}
-
-.mortgage-rates.error {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
-    border-color: rgba(239, 68, 68, 0.2);
-}
-
-.rates-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-}
-
-.rates-header h3 {
-    font-size: 1rem;
-    color: var(--accent-green);
-    margin: 0;
-    font-weight: 600;
-}
-
-.refresh-btn {
+    right: 12px;
     width: 24px;
     height: 24px;
     border: none;
-    background: rgba(16, 185, 129, 0.1);
-    border-radius: 4px;
+    background: none;
+    font-size: 18px;
+    color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
     transition: all 0.2s ease;
-    padding: 0;
 }
 
-.refresh-btn svg {
-    width: 14px;
-    height: 14px;
-    fill: var(--accent-green);
-    transition: transform 0.3s ease;
+.tooltip-close:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--accent-red);
 }
 
-.refresh-btn:hover {
-    background: var(--accent-green);
-    transform: scale(1.05);
-}
-
-.refresh-btn:hover svg {
-    fill: white;
-    transform: rotate(180deg);
-}
-
-.refresh-btn:focus {
-    outline: 2px solid rgba(16, 185, 129, 0.3);
-    outline-offset: 2px;
-}
-
-.rates-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 10px;
-}
-
-.rate-item {
-    text-align: center;
-    padding: 8px;
-    background: white;
-    border-radius: 4px;
-    border: 1px solid rgba(16, 185, 129, 0.1);
-}
-
-.rate-label {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-bottom: 3px;
-    font-weight: 500;
-}
-
-.rate-value {
-    display: block;
+.tooltip-text h4 {
+    color: var(--primary-blue);
     font-size: 1.1rem;
-    color: var(--accent-green);
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.tooltip-text p {
+    color: var(--text-primary);
+    line-height: 1.5;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Rent Panel - Right Column */
+.rent-panel {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+    border: 2px solid rgba(251, 146, 60, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow-medium);
+    backdrop-filter: blur(10px);
+    min-height: fit-content;
+    position: sticky;
+    top: 20px;
+}
+
+.rent-panel-header {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.rent-panel-header h3 {
+    font-size: 1.1rem;
+    color: #ea580c;
+    margin: 0 0 6px 0;
     font-weight: 700;
 }
 
-.mortgage-rates.loading .rate-value {
+.rent-subtitle {
+    font-size: 0.85rem;
     color: var(--text-secondary);
-    font-weight: 400;
+    margin: 0;
+    font-style: italic;
 }
 
-.mortgage-rates.error .rate-value {
-    color: var(--accent-red);
-    font-weight: 400;
+/* Rent Form Styling */
+.rent-form {
+    margin-bottom: 16px;
 }
 
-.rates-footer {
+.rent-input-group {
+    margin-bottom: 16px;
+}
+
+.rent-input-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.rent-input-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid rgba(251, 146, 60, 0.2);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background: white;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.rent-input-group input:focus {
+    outline: none;
+    border-color: #ea580c;
+    box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.1);
+}
+
+.rent-input-group input.valid {
+    border-color: var(--accent-green);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.rent-input-group input.invalid {
+    border-color: var(--accent-red);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.rent-hint {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 3px;
+    font-style: italic;
+}
+
+/* Rent Button Group */
+.rent-button-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.rent-calculate-btn, .rent-reset-btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
     text-align: center;
-    padding-top: 8px;
-    border-top: 1px solid rgba(16, 185, 129, 0.2);
+    flex: 1;
 }
 
-.rates-date {
+.rent-calculate-btn {
+    background: linear-gradient(135deg, #EA580C 0%, #DC2626 100%);
+    color: white;
+}
+
+.rent-calculate-btn:hover {
+    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+}
+
+.rent-reset-btn {
+    background: rgba(251, 146, 60, 0.1);
+    color: #ea580c;
+    border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+.rent-reset-btn:hover {
+    background: rgba(251, 146, 60, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Rent Results - Multiple Terms */
+.rent-result {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid rgba(251, 146, 60, 0.2);
+    box-shadow: var(--shadow-light);
+}
+
+.rent-results-header {
+    text-align: center;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(251, 146, 60, 0.1);
+}
+
+.rent-results-header h4 {
+    font-size: 0.95rem;
+    color: #ea580c;
+    margin: 0 0 2px 0;
+    font-weight: 700;
+}
+
+.results-subtitle {
     font-size: 0.75rem;
     color: var(--text-secondary);
     font-style: italic;
 }
 
-/* Responsive adjustments for rates */
-@media (max-width: 480px) {
-    .rates-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-    
-    .rates-header {
-        flex-direction: column;
-        gap: 8px;
-        text-align: center;
-    }
+/* Individual Result Sections */
+.rent-result-section {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: rgba(251, 146, 60, 0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(251, 146, 60, 0.1);
+}
+
+.rent-result-section:last-of-type {
+    margin-bottom: 8px;
+}
+
+.rent-result-term-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(251, 146, 60, 0.15);
+}
+
+.term-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ea580c;
+}
+
+.term-rate {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.term-rate.calculated {
+    color: #ea580c !important;
+    font-weight: 600;
+}
+
+.term-rate.live-rate {
+    color: #10b981 !important;
+    font-weight: 700;
+}
+
+.term-rate.estimated {
+    color: #f59e0b !important;
+    font-style: italic;
+    font-weight: 600;
+}
+
+/* Result Items */
+.rent-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.rent-result-item.small {
+    font-size: 0.85em;
+    opacity: 0.9;
+}
+
+.rent-result-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.rent-result-value {
+    font-size: 0.85rem;
+    color: #ea580c;
+    font-weight: 700;
+}
+
+.rent-result-value.primary {
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.rent-result-value.placeholder {
+    color: var(--text-secondary) !important;
+    font-style: italic;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+.rent-result-value.calculated {
+    color: #ea580c !important;
+    font-style: normal !important;
+    opacity: 1 !important;
+    font-weight: 700;
+}
+
+.rent-result-value.primary.calculated {
+    font-weight: 800;
+}
+
+/* Disclaimer */
+.rent-disclaimer {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(251, 146, 60, 0.1);
+    line-height: 1.3;
+}
+
+.rent-disclaimer .rate-legend {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.65rem;
+}
+
+.rate-legend .live { color: #10b981; }
+.rate-legend .estimated { color: #f59e0b; }
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .app-container {
+        padding: 10px;
+    }
+
+    .calculator-layout {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .rent-panel {
+        order: 1;
+        position: static;
+        margin-bottom: 15px;
+    }
+    
     .calculator-container {
-        margin: 8px;
+        order: 2;
+    }
+
+    .compact-rates-content {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .rates-inline {
+        justify-content: center;
+    }
+
+    .refresh-btn-compact {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        max-width: 28px;
+    }
+
+    .refresh-btn-compact svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-header {
+        padding: 15px;
+    }
+
+    .main-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .calculator-container {
         padding: 18px;
     }
 
-    h1 {
-        font-size: 1.6rem;
+    .rent-panel {
+        padding: 15px;
     }
 
-    .button-group {
+    .rent-button-group {
         flex-direction: column;
+        gap: 8px;
+    }
+    
+    .rent-result-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
     }
 
-    .payment-amount {
-        font-size: 1.8rem;
+    .compact-rates-content {
+        gap: 8px;
+    }
+
+    .rates-inline {
+        gap: 10px;
     }
 
     .payment-breakdown {
@@ -664,50 +930,11 @@ button:focus {
         gap: 8px;
     }
 
-    .interest-details {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-}
-
-@media (max-width: 480px) {
-    body {
-        padding: 8px;
-    }
-
-    .calculator-container {
-        padding: 15px;
-    }
-
-    .payment-display {
-        flex-wrap: wrap;
-    }
-
     .payment-amount {
-        font-size: 1.6rem;
+        font-size: 1.8rem;
     }
-}
 
-/* Accessibility Improvements */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
-/* Focus visible for keyboard navigation */
-input:focus-visible,
-button:focus-visible {
-    outline: 2px solid var(--accent-blue);
-    outline-offset: 2px;
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-    :root {
-        --border-color: #000000;
-        --text-secondary: #000000;
+    .currency {
+        font-size: 1.2rem;
     }
 }

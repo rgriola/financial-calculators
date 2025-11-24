@@ -17,175 +17,281 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="calculator-container">
-        <header>
+    <div class="app-container">
+        <!-- Main Header -->
+        <header class="main-header">
             <h1>Mortgage Payment Calculator</h1>
             <p class="subtitle">Calculate your monthly mortgage payments easily and securely</p>
         </header>
 
-        <!-- Current Mortgage Rates Section -->
-        <div id="mortgage-rates" class="mortgage-rates hidden">
-            <div class="rates-header">
-                <h3>Current Mortgage Rates</h3>
-                <button type="button" id="refresh-rates" class="refresh-btn" aria-label="Refresh mortgage rates">
+        <!-- Compact Mortgage Rates Section -->
+        <div id="mortgage-rates" class="mortgage-rates compact hidden">
+            <div class="compact-rates-content">
+                <span class="rates-title">Current Rates:</span>
+                <div class="rates-inline">
+                    <span class="rate-item-inline">
+                        <span class="rate-label-inline">30yr:</span>
+                        <span id="rate-30yr" class="rate-value-inline">...</span>
+                    </span>
+                    <span class="rate-item-inline">
+                        <span class="rate-label-inline">15yr:</span>
+                        <span id="rate-15yr" class="rate-value-inline">...</span>
+                    </span>
+                </div>
+                <button type="button" id="refresh-rates" class="refresh-btn-compact" aria-label="Refresh mortgage rates">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
                     </svg>
                 </button>
-            </div>
-            <div class="rates-grid">
-                <div class="rate-item">
-                    <span class="rate-label">30-Year Fixed:</span>
-                    <span id="rate-30yr" class="rate-value">...</span>
-                </div>
-                <div class="rate-item">
-                    <span class="rate-label">15-Year Fixed:</span>
-                    <span id="rate-15yr" class="rate-value">...</span>
-                </div>
-            </div>
-            <div class="rates-footer">
-                <span class="rates-date">* api-ninjas | Week of: <span id="rates-week">Loading...</span></span>
+                <span class="rates-date-compact">
+                    <span id="rates-week">Loading...</span>
+                </span>
             </div>
         </div>
-        
-        <!-- Message display area -->
-        <div id="message" class="message hidden" aria-live="polite"></div>
-        
-        <form id="mortgageForm" class="mortgage-form">
-            <div class="form-group">
-                <label for="principal">Principal Amount ($)</label>
-                <input 
-                    type="number" 
-                    id="principal" 
-                    name="principal" 
-                    required 
-                    autocomplete="off" 
-                    min="1000" 
-                    max="10000000"
-                    step="1000"
-                    placeholder="e.g., 250000"
-                    maxlength="10">
-                <span class="input-hint">Loan amount in dollars</span>
-            </div>
-            
-            <div class="form-group">
-                <label for="interestRate">Annual Interest Rate (%)</label>
-                <input 
-                    type="number" 
-                    id="interestRate" 
-                    name="interestRate" 
-                    required 
-                    autocomplete="off" 
-                    min="0.01" 
-                    max="30"
-                    step="0.01"
-                    placeholder="e.g., 4.5"
-                    maxlength="6">
-                <span class="input-hint">Annual percentage rate</span>
-            </div>
-            
-            <div class="form-group">
-                <label for="term">Loan Term (Years)</label>
-                <input 
-                    type="number" 
-                    id="term" 
-                    name="term" 
-                    required 
-                    autocomplete="off" 
-                    min="1" 
-                    max="50"
-                    step="1"
-                    placeholder="e.g., 30"
-                    maxlength="2">
-                <span class="input-hint">Length of loan in years</span>
-            </div>
-            
-            <div class="button-group">
-                <button type="button" id="calculateButton" class="calculate-btn">
-                    Calculate Payment
-                </button>
-                <button type="button" id="resetButton" class="reset-btn">
-                    Reset Form
-                </button>
-            </div>
-        </form>
-        
-        <!-- Results Section - Now Always Visible with Placeholders -->
-        <div id="result" class="result">
-            <div class="result-header">
-                <h2>Your Monthly Payment</h2>
-            </div>
-            <div class="payment-display">
-                <span class="currency">$</span>
-                <span id="monthlyPayment" class="payment-amount placeholder">---.--</span>
-                <span class="payment-label">per month</span>
-            </div>
-            <div class="payment-breakdown">
-                <div class="breakdown-item">
-                    <span class="breakdown-label">Principal:</span>
-                    <span id="principalDisplay" class="breakdown-value placeholder">$---,---</span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">Interest Rate:</span>
-                    <span id="interestDisplay" class="breakdown-value placeholder">--.--% </span>
-                </div>
-                <div class="breakdown-item">
-                    <span class="breakdown-label">Loan Term:</span>
-                    <span id="termDisplay" class="breakdown-value placeholder">-- years</span>
-                </div>
-            </div>
-            
-            <!-- Enhanced Interest Summary Section with Placeholders -->
-            <div class="interest-summary">
-                <h3>Interest & Payment Summary</h3>
-                <div class="interest-details">
-                    <div class="interest-item">
-                        <div class="interest-header">
-                            <span class="interest-label">Total Interest Paid:</span>
-                            <button type="button" class="info-icon" data-info="totalInterest" aria-label="Information about total interest">
-                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
-                                    <path d="M9,9 L15,9 M12,12 L12,18 M12,6 L12,6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <span id="totalInterest" class="interest-value highlight placeholder">$---,---</span>
+
+        <!-- Two Column Layout -->
+        <div class="calculator-layout">
+            <!-- Main Calculator Column -->
+            <div class="calculator-container">
+                <!-- Message display area -->
+                <div id="message" class="message hidden" aria-live="polite"></div>
+                
+                <form id="mortgageForm" class="mortgage-form">
+                    <div class="form-group">
+                        <label for="principal">Principal Amount ($)</label>
+                        <input 
+                            type="number" 
+                            id="principal" 
+                            name="principal" 
+                            required 
+                            autocomplete="off" 
+                            min="1000" 
+                            max="10000000"
+                            step="1000"
+                            placeholder="e.g., 250000"
+                            maxlength="10">
+                        <span class="input-hint">Loan amount in dollars</span>
                     </div>
-                    <div class="interest-item">
-                        <div class="interest-header">
-                            <span class="interest-label">Total Amount Paid:</span>
-                            <button type="button" class="info-icon" data-info="totalAmount" aria-label="Information about total amount paid">
-                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
-                                    <path d="M9,9 L15,9 M12,12 L12,18 M12,6 L12,6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <span id="totalAmount" class="interest-value placeholder">$---,---</span>
+                    
+                    <div class="form-group">
+                        <label for="interestRate">Annual Interest Rate (%)</label>
+                        <input 
+                            type="number" 
+                            id="interestRate" 
+                            name="interestRate" 
+                            required 
+                            autocomplete="off" 
+                            min="0.01" 
+                            max="30"
+                            step="0.01"
+                            placeholder="e.g., 4.5"
+                            maxlength="6">
+                        <span class="input-hint">Annual percentage rate</span>
                     </div>
-                    <div class="interest-item">
-                        <div class="interest-header">
-                            <span class="interest-label">Interest vs Principal:</span>
-                            <button type="button" class="info-icon" data-info="interestRatio" aria-label="Information about interest ratio">
-                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
-                                    <path d="M9,9 L15,9 M12,12 L12,18 M12,6 L12,6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <span id="interestRatio" class="interest-value placeholder">--.-%</span>
+                    
+                    <div class="form-group">
+                        <label for="term">Loan Term (Years)</label>
+                        <input 
+                            type="number" 
+                            id="term" 
+                            name="term" 
+                            required 
+                            autocomplete="off" 
+                            min="1" 
+                            max="50"
+                            step="1"
+                            placeholder="e.g., 30"
+                            maxlength="2">
+                        <span class="input-hint">Length of loan in years</span>
                     </div>
-                    <div class="interest-item">
-                        <div class="interest-header">
-                            <span class="interest-label">Total Payments:</span>
-                            <button type="button" class="info-icon" data-info="totalPayments" aria-label="Information about total payments">
-                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
-                                    <path d="M9,9 L15,9 M12,12 L12,18 M12,6 L12,6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                </svg>
-                            </button>
+                    
+                    <div class="button-group">
+                        <button type="button" id="calculateButton" class="calculate-btn">
+                            Calculate Payment
+                        </button>
+                        <button type="button" id="resetButton" class="reset-btn">
+                            Reset Form
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Results Section -->
+                <div id="result" class="result">
+                    <div class="result-header">
+                        <h2>Your Monthly Payment</h2>
+                    </div>
+                    <div class="payment-display">
+                        <span class="currency">$</span>
+                        <span id="monthlyPayment" class="payment-amount placeholder">---.--</span>
+                        <span class="payment-label">per month</span>
+                    </div>
+                    <div class="payment-breakdown">
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Principal:</span>
+                            <span id="principalDisplay" class="breakdown-value placeholder">$---,---</span>
                         </div>
-                        <span id="totalPayments" class="interest-value placeholder">---</span>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Interest Rate:</span>
+                            <span id="interestDisplay" class="breakdown-value placeholder">--.--% </span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Loan Term:</span>
+                            <span id="termDisplay" class="breakdown-value placeholder">-- years</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Enhanced Interest Summary Section -->
+                    <div class="interest-summary">
+                        <h3>Interest & Payment Summary</h3>
+                        <div class="interest-details">
+                            <div class="interest-item">
+                                <div class="interest-header">
+                                    <span class="interest-label">Total Interest Paid:</span>
+                                    <button type="button" class="info-icon" data-info="totalInterest" aria-label="Information about total interest">
+                                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                                            <path d="M9,9 L15,9 M12,12 L12,18 M12,6 L12,6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <span id="totalInterest" class="interest-value highlight placeholder">$---,---</span>
+                            </div>
+                            <div class="interest-item">
+                                <div class="interest-header">
+                                    <span class="interest-label">Total Amount Paid:</span>
+                                    <button type="button" class="info-icon" data-info="totalAmount" aria-label="Information about total amount paid">
+                                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                                            <path d="M9,9 L15,9 M12,12 L12,18 M12,6 L12,6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <span id="totalAmount" class="interest-value placeholder">$---,---</span>
+                            </div>
+                            <div class="interest-item">
+                                <div class="interest-header">
+                                    <span class="interest-label">Interest vs Principal:</span>
+                                    <button type="button" class="info-icon" data-info="interestRatio" aria-label="Information about interest ratio">
+                                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                                            <path d="M9,9 L15,9 M12,12 L12,18 M12,6 L12,6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <span id="interestRatio" class="interest-value placeholder">--.-%</span>
+                            </div>
+                            <div class="interest-item">
+                                <div class="interest-header">
+                                    <span class="interest-label">Total Payments:</span>
+                                    <button type="button" class="info-icon" data-info="totalPayments" aria-label="Information about total payments">
+                                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                                            <path d="M9,9 L15,9 M12,12 L12,18 M12,6 L12,6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <span id="totalPayments" class="interest-value placeholder">---</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rent to Mortgage Panel -->
+            <div class="rent-panel">
+                <div class="rent-panel-header">
+                    <h3>💰 Rent to Mortgage</h3>
+                    <p class="rent-subtitle">What mortgage could you afford?</p>
+                </div>
+                
+                <form id="rentForm" class="rent-form">
+                    <div class="rent-input-group">
+                        <label for="rentAmount">Current Rent ($)</label>
+                        <input 
+                            type="number" 
+                            id="rentAmount" 
+                            name="rentAmount" 
+                            required 
+                            autocomplete="off" 
+                            min="500" 
+                            max="20000"
+                            step="50"
+                            placeholder="e.g., 2500"
+                            maxlength="6">
+                        <span class="rent-hint">Monthly rent payment</span>
+                    </div>
+                    
+                    <div class="rent-button-group">
+                        <button type="button" id="calculateRentButton" class="rent-calculate-btn">
+                            Calculate
+                        </button>
+                        <button type="button" id="resetRentButton" class="rent-reset-btn">
+                            Reset
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Rent Results - Multiple Loan Terms -->
+                <div id="rentResult" class="rent-result">
+                    <div class="rent-results-header">
+                        <h4>Affordable Mortgage Principal</h4>
+                        <span class="results-subtitle">Based on your rent payment</span>
+                    </div>
+                    
+                    <!-- 15 Year Fixed -->
+                    <div class="rent-result-section">
+                        <div class="rent-result-term-header">
+                            <span class="term-label">15-Year Fixed</span>
+                            <span id="rate15Display" class="term-rate placeholder">--.--% rate</span>
+                        </div>
+                        <div class="rent-result-item">
+                            <span class="rent-result-label">Principal Amount:</span>
+                            <span id="principal15yr" class="rent-result-value primary placeholder">$---,---</span>
+                        </div>
+                        <div class="rent-result-item small">
+                            <span class="rent-result-label">Total Interest:</span>
+                            <span id="totalInterest15yr" class="rent-result-value placeholder">$---,---</span>
+                        </div>
+                    </div>
+
+                    <!-- 30 Year Fixed -->
+                    <div class="rent-result-section">
+                        <div class="rent-result-term-header">
+                            <span class="term-label">30-Year Fixed</span>
+                            <span id="rate30Display" class="term-rate placeholder">--.--% rate</span>
+                        </div>
+                        <div class="rent-result-item">
+                            <span class="rent-result-label">Principal Amount:</span>
+                            <span id="principal30yr" class="rent-result-value primary placeholder">$---,---</span>
+                        </div>
+                        <div class="rent-result-item small">
+                            <span class="rent-result-label">Total Interest:</span>
+                            <span id="totalInterest30yr" class="rent-result-value placeholder">$---,---</span>
+                        </div>
+                    </div>
+
+                    <!-- 50 Year Fixed (Hypothetical) -->
+                    <div class="rent-result-section">
+                        <div class="rent-result-term-header">
+                            <span class="term-label">50-Year Fixed</span>
+                            <span id="rate50Display" class="term-rate placeholder">--.--% rate*</span>
+                        </div>
+                        <div class="rent-result-item">
+                            <span class="rent-result-label">Principal Amount:</span>
+                            <span id="principal50yr" class="rent-result-value primary placeholder">$---,---</span>
+                        </div>
+                        <div class="rent-result-item small">
+                            <span class="rent-result-label">Total Interest:</span>
+                            <span id="totalInterest50yr" class="rent-result-value placeholder">$---,---</span>
+                        </div>
+                    </div>
+
+                    <div class="rent-disclaimer">
+                        <span>* 50-year rates are estimated as 30-year + 0.5%</span>
+                        <span class="rate-legend">
+                            <span class="live">● Live API Rate</span> | 
+                            <span class="estimated">● Estimated Rate</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -200,7 +306,13 @@
         </div>
     </div>
     
+    <!-- Load JavaScript modules in correct order -->
+    <script src="js/security-utils.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/ui-manager.js"></script>
+    <script src="js/mortgage-calculator.js"></script>
+    <script src="js/rent-calculator.js"></script>
     <script src="mortgage-rates.js"></script>
-    <script src="app.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
