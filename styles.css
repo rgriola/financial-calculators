@@ -5,6 +5,8 @@
     --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --accent-blue: #667eea;
     --accent-green: #10b981;
+    --hover-green:#34e8ac;  
+    --white-bro: #ffffff;
     --accent-red: #ef4444;
     --text-primary: #1e293b;
     --text-secondary: #64748b;
@@ -14,6 +16,8 @@
     --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     --shadow-large: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     --primary-blue: #3b82f6;
+    --hover-blue: #6b9ef1;
+
 }
 
 * {
@@ -80,12 +84,13 @@ body {
     flex-wrap: wrap;
 }
 
-.rates-title {
+.rates-title, .rates-week  {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--accent-green);
+    color: var(--white-bro);
     flex-shrink: 0; /* Prevent shrinking */
 }
+
 
 .rates-inline {
     display: flex;
@@ -123,7 +128,7 @@ body {
     min-width: 24px;       /* Prevent shrinking */
     max-width: 24px;       /* Prevent growing */
     border: none;
-    background: rgba(16, 185, 129, 0.1);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
     cursor: pointer;
     display: flex;
@@ -140,7 +145,7 @@ body {
 .refresh-btn-compact svg {
     width: 14px;           /* Fixed SVG size */
     height: 14px;          /* Fixed SVG size */
-    fill: var(--accent-green);
+    fill: var(--white-bro);
     transition: transform 0.3s ease;
     flex-shrink: 0;        /* Prevent shrinking */
 }
@@ -586,14 +591,14 @@ button:focus {
 
 .rent-panel-header h3 {
     font-size: 1.1rem;
-    color: #ea580c;
+    color: #fffbf9;
     margin: 0 0 6px 0;
     font-weight: 700;
 }
 
 .rent-subtitle {
     font-size: 0.85rem;
-    color: var(--text-secondary);
+    color: var(--white-bro);
     margin: 0;
     font-style: italic;
 }
@@ -645,7 +650,7 @@ button:focus {
 .rent-hint {
     display: block;
     font-size: 0.8rem;
-    color: var(--text-secondary);
+    color: var(--white-bro);
     margin-top: 3px;
     font-style: italic;
 }
@@ -670,24 +675,25 @@ button:focus {
 }
 
 .rent-calculate-btn {
-    background: linear-gradient(135deg, #EA580C 0%, #DC2626 100%);
+    background: var(--accent-green);
     color: white;
 }
 
 .rent-calculate-btn:hover {
-    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+    background: var(--hover-green);
     transform: translateY(-1px);
     box-shadow: var(--shadow-medium);
 }
 
 .rent-reset-btn {
-    background: rgba(251, 146, 60, 0.1);
-    color: #ea580c;
+    background: var(--primary-blue
+    );
+    color: var(--white-bro);
     border: 1px solid rgba(251, 146, 60, 0.3);
 }
 
 .rent-reset-btn:hover {
-    background: rgba(251, 146, 60, 0.2);
+    background: var(--hover-blue);
     transform: translateY(-1px);
 }
 
