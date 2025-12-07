@@ -1261,6 +1261,48 @@ button:focus {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Tabs UX for calculators */
+.calculator-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  justify-content: center;
+}
+.tab-btn {
+  background: var(--surface-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px 8px 0 0;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  outline: none;
+}
+.tab-btn.active {
+  background: var(--accent-blue);
+  color: #fff;
+  border-bottom: 2px solid var(--accent-green);
+  z-index: 2;
+}
+.tab-btn:not(.active):hover {
+  background: var(--hover-blue);
+  color: #fff;
+}
+.tab-panel {
+  display: block;
+  background: var(--surface-light);
+  border-radius: 0 0 12px 12px;
+  box-shadow: var(--shadow-light);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.tab-panel.hidden {
+  display: none !important;
+}
+
 /* Responsive adjustments for location search */
 @media (max-width: 600px) {
     .location-search-inputs {
@@ -1277,12 +1319,6 @@ button:focus {
         width: 100%;
         text-align: center;
     }
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Responsive Design */
@@ -1388,5 +1424,340 @@ button:focus {
     .calculator-container {
         box-shadow: none;
         border: 1px solid #000;
+    }
+}
+
+/* ===============================================
+   Credit Card Calculator Styling
+   =============================================== */
+
+/* Credit Card Form Styling */
+.credit-form {
+    margin-bottom: 16px;
+}
+
+.credit-input-group {
+    margin-bottom: 16px;
+}
+
+.credit-input-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.credit-input-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid rgba(239, 68, 68, 0.2);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background: white;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.credit-input-group input:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.credit-input-group input.valid {
+    border-color: var(--accent-green);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.credit-input-group input.invalid {
+    border-color: var(--accent-red);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.credit-hint {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--white-bro);
+    margin-top: 3px;
+    font-style: italic;
+}
+
+/* Credit Card Button Group */
+.credit-button-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.credit-calculate-btn, .credit-reset-btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    flex: 1;
+}
+
+.credit-calculate-btn {
+    background: var(--accent-green);
+    color: white;
+}
+
+.credit-calculate-btn:hover {
+    background: var(--hover-green);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+}
+
+.credit-reset-btn {
+    background: var(--primary-blue);
+    color: var(--white-bro);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.credit-reset-btn:hover {
+    background: var(--hover-blue);
+    transform: translateY(-1px);
+}
+
+/* Credit Card Results */
+.credit-result {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    box-shadow: var(--shadow-light);
+    display: none;
+}
+
+.credit-results-header {
+    text-align: center;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(239, 68, 68, 0.1);
+}
+
+.credit-results-header h4 {
+    font-size: 0.95rem;
+    color: #dc2626;
+    margin: 0 0 2px 0;
+    font-weight: 700;
+}
+
+/* Credit Result Section */
+.credit-result-section {
+    margin-bottom: 8px;
+    padding: 12px;
+    background: rgba(239, 68, 68, 0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+/* Credit Result Items */
+.credit-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+}
+
+.credit-result-item.primary {
+    padding: 8px 0;
+    margin-bottom: 4px;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.credit-result-item.small {
+    font-size: 0.85em;
+    opacity: 0.9;
+}
+
+.credit-result-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.credit-result-value {
+    font-size: 0.85rem;
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.credit-result-value.highlight {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #dc2626;
+}
+
+.credit-result-value.placeholder {
+    color: var(--text-secondary) !important;
+    font-style: italic;
+    opacity: 0.7;
+    font-weight: 400;
+}
+
+.credit-result-value:not(.placeholder) {
+    color: #dc2626 !important;
+    font-style: normal !important;
+    opacity: 1 !important;
+    font-weight: 700;
+}
+
+.credit-result-value.highlight:not(.placeholder) {
+    font-weight: 800;
+}
+
+/* Initial Balance Display */
+.credit-result-item.initial-balance {
+    padding: 8px 0;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.credit-result-item.initial-balance .credit-result-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+/* Credit Card Disclaimer */
+.credit-disclaimer {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(239, 68, 68, 0.1);
+    line-height: 1.3;
+}
+
+/* Payment Breakdown Chart */
+.payment-breakdown {
+    margin-top: 16px;
+    padding: 16px;
+    background: rgba(239, 68, 68, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.breakdown-header {
+    text-align: center;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.breakdown-header h5 {
+    font-size: 0.9rem;
+    color: #dc2626;
+    margin: 0 0 2px 0;
+    font-weight: 700;
+}
+
+.breakdown-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.breakdown-chart {
+    margin-bottom: 12px;
+}
+
+.chart-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 80px;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.chart-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.chart-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.chart-bar-container {
+    height: 24px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.chart-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease-out;
+    position: relative;
+}
+
+.principal-bar {
+    background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.interest-bar {
+    background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.chart-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: right;
+}
+
+.breakdown-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-top: 12px;
+    background: white;
+    border-radius: 6px;
+    border: 2px solid rgba(239, 68, 68, 0.2);
+}
+
+.total-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.total-value {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #dc2626;
+}
+
+/* Responsive adjustments for payment breakdown */
+@media (max-width: 600px) {
+    .chart-row {
+        grid-template-columns: 120px 1fr 70px;
+        gap: 8px;
+    }
+    
+    .chart-label {
+        font-size: 0.8rem;
+    }
+    
+    .chart-value {
+        font-size: 0.8rem;
     }
 }

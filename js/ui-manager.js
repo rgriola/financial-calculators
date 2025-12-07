@@ -1,7 +1,34 @@
-// UI management for financial calculator
+/**
+ * UI Manager for Financial Calculators
+ * ------------------------------------
+ * Handles all user interface updates, event bindings, validation, tooltips, tab switching,
+ * keyboard shortcuts, and result display for the financial calculator web app.
+ * All direct DOM manipulation and UI logic should be centralized here.
+ *
+ * Exposed Methods:
+ * - showMessage(message, type)
+ * - hideMessage()
+ * - showMortgagePlaceholders()
+ * - showRentPlaceholders()
+ * - showCreditPlaceholders()
+ * - updateInputValidation(input, isValid)
+ * - displayMortgageResults(calculations, principal, interestRate, term)
+ * - setupInfoTooltips()
+ * - showInfoTooltip(infoType)
+ * - hideInfoTooltip()
+ * - setupKeyboardShortcuts()
+ * - updateLoanTypeIndicator(loanTypeInfo)
+ * - hideLoanTypeIndicator()
+ * - populateStates(states)
+ * - populateCounties(counties)
+ * - setupCalculatorTabs()
+ */
 
 const UIManager = {
-    // Info content for tooltips
+    /**
+     * Info content for tooltips.
+     * @type {Object}
+     */
     INFO_CONTENT: {
         totalInterest: {
             title: "Total Interest Paid",
@@ -25,7 +52,11 @@ const UIManager = {
         }
     },
 
-    // Show secure message
+    /**
+     * Show a secure message to the user.
+     * @param {string} message - The message to display.
+     * @param {string} [type='info'] - Message type: 'info', 'success', 'error'.
+     */
     showMessage: function(message, type = 'info') {
         const messageDiv = document.getElementById('message');
         if (!messageDiv) return;
@@ -43,7 +74,9 @@ const UIManager = {
         }
     },
 
-    // Hide message
+    /**
+     * Hide the message display.
+     */
     hideMessage: function() {
         const messageDiv = document.getElementById('message');
         if (messageDiv) {
@@ -51,7 +84,9 @@ const UIManager = {
         }
     },
 
-    // Show mortgage result placeholders
+    /**
+     * Show mortgage result placeholders in the UI.
+     */
     showMortgagePlaceholders: function() {
         const resultDiv = document.getElementById('result');
         if (resultDiv) {
@@ -79,7 +114,9 @@ const UIManager = {
         });
     },
 
-    // Show rent result placeholders
+    /**
+     * Show rent result placeholders in the UI.
+     */
     showRentPlaceholders: function() {
         const placeholders = {
             // 15-year placeholders
@@ -108,7 +145,32 @@ const UIManager = {
         });
     },
 
-    // Update input validation styling
+    /**
+     * Show credit card result placeholders in the UI.
+     */
+    showCreditPlaceholders: function() {
+        const placeholders = {
+            'initialBalance': '$---,---',
+            'payoffTime': '-- months',
+            'totalCreditInterest': '$---,---',
+            'totalCreditAmount': '$---,---',
+            'monthlyInterestRate': '--.--% '
+        };
+
+        Object.keys(placeholders).forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = placeholders[id];
+                element.classList.add('placeholder');
+            }
+        });
+    },
+
+    /**
+     * Update input validation styling for a given input.
+     * @param {HTMLElement} input - The input element.
+     * @param {boolean} isValid - Whether the input is valid.
+     */
     updateInputValidation: function(input, isValid) {
         if (!input) return;
 
@@ -125,7 +187,13 @@ const UIManager = {
         }
     },
 
-    // Display mortgage results
+    /**
+     * Display mortgage calculation results in the UI.
+     * @param {Object} calculations - Calculation results.
+     * @param {number} principal - Principal amount.
+     * @param {number} interestRate - Interest rate.
+     * @param {number} term - Loan term in years.
+     */
     displayMortgageResults: function(calculations, principal, interestRate, term) {
         const resultDiv = document.getElementById('result');
         const paymentSpan = document.getElementById('monthlyPayment');
@@ -167,7 +235,9 @@ const UIManager = {
         this.showMessage('Calculation completed successfully!', 'success');
     },
 
-    // Setup info tooltips
+    /**
+     * Setup info tooltips for info icons.
+     */
     setupInfoTooltips: function() {
         const infoIcons = document.querySelectorAll('.info-icon');
         infoIcons.forEach(icon => {
@@ -205,7 +275,10 @@ const UIManager = {
         });
     },
 
-    // Show info tooltip
+    /**
+     * Show an info tooltip for a given info type.
+     * @param {string} infoType - The info type key.
+     */
     showInfoTooltip: function(infoType) {
         const tooltip = document.getElementById('infoTooltip');
         const tooltipText = document.getElementById('tooltipText');
@@ -235,7 +308,9 @@ const UIManager = {
         }
     },
 
-    // Hide info tooltip
+    /**
+     * Hide the info tooltip.
+     */
     hideInfoTooltip: function() {
         const tooltip = document.getElementById('infoTooltip');
         if (tooltip) {
@@ -243,7 +318,9 @@ const UIManager = {
         }
     },
 
-    // Setup keyboard shortcuts
+    /**
+     * Setup keyboard shortcuts for calculator actions.
+     */
     setupKeyboardShortcuts: function() {
         document.addEventListener('keydown', (e) => {
             // Ctrl/Cmd + Enter to calculate
@@ -267,7 +344,10 @@ const UIManager = {
         });
     },
 
-    // Update loan type indicator
+    /**
+     * Update the loan type indicator display.
+     * @param {Object} loanTypeInfo - Info about the loan type.
+     */
     updateLoanTypeIndicator: function(loanTypeInfo) {
         const indicator = document.getElementById('loanTypeIndicator');
         const badge = document.getElementById('loanTypeBadge');
@@ -298,7 +378,9 @@ const UIManager = {
         }
     },
 
-    // Hide loan type indicator
+    /**
+     * Hide the loan type indicator.
+     */
     hideLoanTypeIndicator: function() {
         const indicator = document.getElementById('loanTypeIndicator');
         if (indicator) {
@@ -306,7 +388,10 @@ const UIManager = {
         }
     },
 
-    // Populate state dropdown
+    /**
+     * Populate the state dropdown with available states.
+     * @param {Array<string>} states - List of state names.
+     */
     populateStates: function(states) {
         const stateSelect = document.getElementById('propertyState');
         if (!stateSelect) return;
@@ -323,7 +408,10 @@ const UIManager = {
         });
     },
 
-    // Populate county dropdown
+    /**
+     * Populate the county dropdown with available counties.
+     * @param {Array<string>} counties - List of county names.
+     */
     populateCounties: function(counties) {
         const countySelect = document.getElementById('propertyCounty');
         if (!countySelect) return;
@@ -346,6 +434,52 @@ const UIManager = {
         });
 
         countySelect.disabled = false;
+    },
+
+    /**
+     * Setup tab switching logic for calculator panels.
+     * Handles tab navigation and panel visibility.
+     * Only toggles .hidden on individual tab panels, not the parent container.
+     */
+    setupCalculatorTabs: function() {
+        const tabMortgage = document.getElementById('tab-mortgage');
+        const tabRent = document.getElementById('tab-rent');
+        const tabCredit = document.getElementById('tab-credit');
+        const panelMortgage = document.getElementById('panel-mortgage');
+        const panelRent = document.getElementById('panel-rent');
+        const panelCredit = document.getElementById('panel-credit');
+
+        function showPanel(panelToShow, tabToActivate) {
+            // Hide all panels
+            panelMortgage.classList.add('hidden');
+            panelRent.classList.add('hidden');
+            panelCredit.classList.add('hidden');
+            
+            // Deactivate all tabs
+            tabMortgage.classList.remove('active');
+            tabMortgage.setAttribute('aria-selected', 'false');
+            tabRent.classList.remove('active');
+            tabRent.setAttribute('aria-selected', 'false');
+            tabCredit.classList.remove('active');
+            tabCredit.setAttribute('aria-selected', 'false');
+            
+            // Show selected panel and activate tab
+            panelToShow.classList.remove('hidden');
+            tabToActivate.classList.add('active');
+            tabToActivate.setAttribute('aria-selected', 'true');
+        }
+
+        tabMortgage.addEventListener('click', function() {
+            showPanel(panelMortgage, tabMortgage);
+        });
+
+        tabRent.addEventListener('click', function() {
+            showPanel(panelRent, tabRent);
+        });
+
+        tabCredit.addEventListener('click', function() {
+            showPanel(panelCredit, tabCredit);
+        });
     }
 };
 
