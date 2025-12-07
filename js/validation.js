@@ -69,34 +69,54 @@ const Validator = {
 
     // Real-time input validation
     validateSingleInput: function(inputId, value) {
+        // Remove commas before validating
+        const cleanValue = value.replace(/,/g, '');
+        
         switch (inputId) {
             case 'principal':
                 return SecurityUtils.validateNumericInput(
-                    value, 
+                    cleanValue, 
                     ValidationConfig.MIN_PRINCIPAL, 
                     ValidationConfig.MAX_PRINCIPAL
                 );
             case 'interestRate':
                 return SecurityUtils.validateNumericInput(
-                    value, 
+                    cleanValue, 
                     ValidationConfig.MIN_INTEREST_RATE, 
                     ValidationConfig.MAX_INTEREST_RATE
                 );
             case 'term':
                 return SecurityUtils.validateNumericInput(
-                    value, 
+                    cleanValue, 
                     ValidationConfig.MIN_TERM, 
                     ValidationConfig.MAX_TERM
                 );
             case 'rentAmount':
                 return SecurityUtils.validateNumericInput(
-                    value, 
+                    cleanValue, 
                     ValidationConfig.MIN_RENT, 
                     ValidationConfig.MAX_RENT
                 );
             default:
                 return false;
         }
+    },
+
+    // Add custom error messages
+    VALIDATION_MESSAGES: {
+        principal: {
+            required: 'Principal amount is required',
+            min: 'Principal must be at least $1,000',
+            max: 'Principal cannot exceed $10,000,000',
+            invalid: 'Please enter a valid dollar amount'
+        },
+        interestRate: {
+            required: 'Interest rate is required',
+            min: 'Interest rate must be at least 0.01%',
+            max: 'Interest rate cannot exceed 30%',
+            invalid: 'Please enter a valid interest rate'
+        },
+        // ... more messages
     }
 };
 

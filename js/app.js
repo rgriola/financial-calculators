@@ -36,6 +36,9 @@ const FinancialCalculatorApp = {
         // Setup mortgage calculator
         MortgageCalculator.setupEventListeners();
         
+        // Setup location-based loan limits
+        MortgageCalculator.setupLocationHandlers();
+        
         // Setup rent calculator
         RentCalculator.setupEventListeners();
         
@@ -80,4 +83,28 @@ const FinancialCalculatorApp = {
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     FinancialCalculatorApp.init();
+});
+
+// Global error handling
+window.addEventListener('error', function(event) {
+    AppConfig.log('error', 'Global Error:', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error
+    });
+    
+    // Show user-friendly message in production
+    if (!AppConfig.environment.isDevelopment) {
+        UIManager.showMessage('An unexpected error occurred. Please refresh the page.', 'error');
+    }
+});
+
+// Unhandled promise rejection handler
+window.addEventListener('unhandledrejection', function(event) {
+    AppConfig.log('error', 'Unhandled Promise Rejection:', {
+        reason: event.reason,
+        promise: event.promise
+    });
 });

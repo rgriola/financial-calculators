@@ -114,6 +114,9 @@ const MortgageRateService = {
 
     // Fetch mortgage rates with retry logic
     fetchRates: async function() {
+        AppConfig.performance.start('fetchMortgageRates');
+        AppConfig.log('info', 'Fetching mortgage rates...');
+
         console.log('Fetching mortgage rates...');
 
         // Check cache first
@@ -165,6 +168,8 @@ const MortgageRateService = {
                 this.displayRates(sanitizedData);
                 this.hideLoadingState();
                 
+                AppConfig.performance.end('fetchMortgageRates');
+                AppConfig.log('info', 'Mortgage rates fetched successfully', sanitizedData);
                 return sanitizedData;
 
             } catch (error) {

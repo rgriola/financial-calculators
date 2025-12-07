@@ -8,8 +8,13 @@
     <!-- Add favicon to prevent 404 -->
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
     
-    <!-- Enhanced Security Headers following security.md - Fixed CSP -->
+    <!-- 🔧 DEVELOPMENT CSP - Allows Live Server hot-reload -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.api-ninjas.com ws: wss:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    
+    <!-- 🚀 PRODUCTION CSP - Use this for GitHub Pages (comment out development CSP above)
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.api-ninjas.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    -->
+    
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -49,6 +54,62 @@
             </div>
         </div>
 
+        <!-- Property Location Lookup Section -->
+        <div id="loanLimitSection" class="loan-limit-section-external hidden">
+            <div class="loan-limit-container">
+                <div class="loan-limit-header">
+                    <h3 class="section-title">
+                        📍 Property Location
+                        <button type="button" class="info-icon" data-info="loanLimits" aria-label="Information about loan limits">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <path d="M9,9 L15,9 M12,12 L12,18 M12,6 L12,6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </h3>
+                    <p class="section-subtitle">Enter state and county to check loan limits. We are using 2026 Fannie Mae and Freddie Mac Conforming Loan Limits</p>
+                </div>
+                
+                <div class="location-search-container">
+                    <div class="location-search-inputs">
+                        <div class="search-input-wrapper">
+                            <input 
+                                type="text" 
+                                id="stateSearch" 
+                                class="location-search-input"
+                                placeholder="State (e.g., CA, NY, TX)"
+                                autocomplete="off"
+                                maxlength="2">
+                            <div id="stateDropdown" class="search-dropdown hidden"></div>
+                        </div>
+                        
+                        <div class="search-input-wrapper">
+                            <input 
+                                type="text" 
+                                id="countySearch" 
+                                class="location-search-input"
+                                placeholder="County name"
+                                autocomplete="off"
+                                disabled>
+                            <div id="countyDropdown" class="search-dropdown hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- Loan Type Indicator -->
+                    <div id="loanTypeIndicator" class="loan-type-indicator hidden">
+                        <div class="loan-type-content">
+                            <span id="loanTypeBadge" class="badge conforming">Conforming</span>
+                            <div class="loan-limit-details">
+                                <span class="limit-label">Limit:</span>
+                                <span id="countyLimitDisplay" class="limit-value">$832,750</span>
+                            </div>
+                            <span id="loanStatusMessage" class="loan-status-message"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Two Column Layout -->
         <div class="calculator-layout">
             <!-- Main Calculator Column -->
@@ -60,16 +121,15 @@
                     <div class="form-group">
                         <label for="principal">Principal Amount ($)</label>
                         <input 
-                            type="number" 
+                            type="text" 
                             id="principal" 
                             name="principal" 
                             required 
                             autocomplete="off" 
-                            min="1000" 
-                            max="10000000"
-                            step="1000"
-                            placeholder="e.g., 250000"
-                            maxlength="10">
+                            inputmode="numeric"
+                            pattern="[0-9,]*"
+                            placeholder="e.g., 250,000"
+                            maxlength="15">
                         <span class="input-hint">Loan amount in dollars</span>
                     </div>
                     
@@ -103,6 +163,20 @@
                             placeholder="e.g., 30, 15"
                             maxlength="2">
                         <span class="input-hint">Length of loan in years</span>
+                    </div>
+
+                    <!-- Jumbo Loan Alert -->
+                    <div id="jumboLoanAlert" class="jumbo-loan-alert hidden">
+                        <div class="alert-content">
+                            <span class="alert-icon">⚠️</span>
+                            <div class="alert-text">
+                                <strong>You may need a Jumbo Loan. ($832,750)</strong>
+                                <p>Some counties have higher limits. Check your property's location to confirm.</p>
+                            </div>
+                        </div>
+                        <button type="button" id="checkLocationBtn" class="check-location-btn">
+                            📍 Check Property Location
+                        </button>
                     </div>
                     
                     <div class="button-group">
@@ -307,12 +381,16 @@
     </div>
     
     <!-- Load JavaScript modules in correct order -->
+    <script src="js/config.js"></script>
     <script src="js/security-utils.js"></script>
     <script src="js/validation.js"></script>
+    <script src="js/loan-limits-data.js"></script>
+    <script src="js/loan-limits.js"></script>
+    <script src="js/location-search.js"></script>
     <script src="js/ui-manager.js"></script>
     <script src="js/mortgage-calculator.js"></script>
     <script src="js/rent-calculator.js"></script>
-    <script src="mortgage-rates.js"></script>
+    <script src="js/mortgage-rates.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

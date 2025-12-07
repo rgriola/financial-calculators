@@ -254,7 +254,7 @@ const RentCalculator = {
             rentInput.focus();
         }
 
-        UIManager.showMessage('Rent form has been reset.', 'info');
+        UIManager.showMessage('Rent Form Reset.', 'info');
     },
 
     // Setup event listeners

@@ -8,6 +8,8 @@ A secure, responsive financial calculator application built with vanilla JavaScr
 - **Real-time Validation** - Input validation with visual feedback
 - **Interactive Info Tooltips** - Educational content about mortgage terms
 - **Live Mortgage Rates** - Current 30-year and 15-year fixed rates via API
+- **Conforming vs Jumbo Detection** - Automatic loan type classification based on FHFA 2026 limits
+- **County-Specific Limits** - Select property location to get accurate loan limits
 - **Responsive Design** - Works on desktop, tablet, and mobile
 - **Accessibility Compliant** - ARIA labels and keyboard navigation
 
@@ -28,6 +30,8 @@ A secure, responsive financial calculator application built with vanilla JavaScr
 ✅ **Total Amount Paid** - Principal + Interest combined  
 ✅ **Interest vs Principal Ratio** - Percentage breakdown  
 ✅ **Payment Count** - Total number of monthly payments  
+✅ **Conforming vs Jumbo** - Automatic loan type detection based on FHFA 2026 limits  
+✅ **County Loan Limits** - Real data for all 3,235 counties nationwide  
 
 ### Rent-to-Mortgage Calculator
 ✅ **15-Year Fixed** - Maximum principal with current rent payment  

@@ -18,6 +18,10 @@ const UIManager = {
         totalPayments: {
             title: "Total Number of Payments",
             content: "This is the total number of monthly payments you'll make over the life of your loan. It's calculated by multiplying the loan term in years by 12 months. For example, a 30-year loan equals 360 monthly payments."
+        },
+        loanLimits: {
+            title: "Conforming vs Jumbo Loans",
+            content: "Conforming loans follow limits set by the Federal Housing Finance Agency (FHFA) and can be purchased by Fannie Mae and Freddie Mac. These loans typically offer better interest rates and terms. Jumbo loans exceed these limits and usually require higher credit scores, larger down payments, and come with higher interest rates. The 2026 baseline limit is $832,750, but many counties have higher limits based on local housing costs."
         }
     },
 
@@ -237,6 +241,111 @@ const UIManager = {
         if (tooltip) {
             tooltip.classList.add('hidden');
         }
+    },
+
+    // Setup keyboard shortcuts
+    setupKeyboardShortcuts: function() {
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + Enter to calculate
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('calculateButton')?.click();
+                AppConfig.log('debug', 'Keyboard shortcut: Calculate');
+            }
+            
+            // Ctrl/Cmd + R to reset (prevent page reload)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                e.preventDefault();
+                document.getElementById('resetButton')?.click();
+                AppConfig.log('debug', 'Keyboard shortcut: Reset');
+            }
+            
+            // Escape to close tooltips
+            if (e.key === 'Escape') {
+                this.hideInfoTooltip();
+            }
+        });
+    },
+
+    // Update loan type indicator
+    updateLoanTypeIndicator: function(loanTypeInfo) {
+        const indicator = document.getElementById('loanTypeIndicator');
+        const badge = document.getElementById('loanTypeBadge');
+        const limitDisplay = document.getElementById('countyLimitDisplay');
+        const statusMessage = document.getElementById('loanStatusMessage');
+
+        if (!indicator || !badge || !limitDisplay || !statusMessage) return;
+
+        // Show the indicator
+        indicator.classList.remove('hidden');
+
+        // Update badge
+        badge.textContent = loanTypeInfo.loanType;
+        badge.className = `badge ${loanTypeInfo.isConforming ? 'conforming' : 'jumbo'}`;
+
+        // Update limit display
+        limitDisplay.textContent = '$' + SecurityUtils.formatCurrency(loanTypeInfo.limit);
+
+        // Update status message
+        if (loanTypeInfo.isConforming) {
+            const remaining = loanTypeInfo.limit - loanTypeInfo.principal;
+            statusMessage.textContent = `✓ ${SecurityUtils.formatCurrency(remaining)} below limit`;
+            statusMessage.className = 'status-message conforming';
+        } else {
+            const excess = Math.abs(loanTypeInfo.difference);
+            statusMessage.textContent = `⚠ ${SecurityUtils.formatCurrency(excess)} above limit`;
+            statusMessage.className = 'status-message jumbo';
+        }
+    },
+
+    // Hide loan type indicator
+    hideLoanTypeIndicator: function() {
+        const indicator = document.getElementById('loanTypeIndicator');
+        if (indicator) {
+            indicator.classList.add('hidden');
+        }
+    },
+
+    // Populate state dropdown
+    populateStates: function(states) {
+        const stateSelect = document.getElementById('propertyState');
+        if (!stateSelect) return;
+
+        // Clear existing options except first
+        stateSelect.innerHTML = '<option value="">Select State...</option>';
+
+        // Add state options
+        states.forEach(state => {
+            const option = document.createElement('option');
+            option.value = state;
+            option.textContent = state;
+            stateSelect.appendChild(option);
+        });
+    },
+
+    // Populate county dropdown
+    populateCounties: function(counties) {
+        const countySelect = document.getElementById('propertyCounty');
+        if (!countySelect) return;
+
+        // Clear existing options
+        countySelect.innerHTML = '<option value="">Select County...</option>';
+
+        if (counties.length === 0) {
+            countySelect.innerHTML = '<option value=""> available</option>';
+            countySelect.disabled = true;
+            return;
+        }
+
+        // Add county options
+        counties.forEach(county => {
+            const option = document.createElement('option');
+            option.value = county;
+            option.textContent = county;
+            countySelect.appendChild(option);
+        });
+
+        countySelect.disabled = false;
     }
 };
 
