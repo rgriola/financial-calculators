@@ -1399,6 +1399,386 @@ button:focus {
     .alert-icon {
         font-size: 1.25rem;
     }
+
+    /* Make all calculators more compact on mobile */
+    body {
+        padding: 8px;
+    }
+
+    .app-container {
+        padding: 5px;
+    }
+
+    .main-header {
+        margin-bottom: 12px;
+        padding: 12px;
+    }
+
+    .main-header h1 {
+        font-size: 1.3rem;
+        margin-bottom: 4px;
+    }
+
+    .main-header .subtitle {
+        font-size: 0.8rem;
+    }
+
+    /* Compact mortgage rates */
+    .mortgage-rates.compact {
+        padding: 8px 10px;
+        margin-bottom: 12px;
+    }
+
+    .rates-title, .rates-week {
+        font-size: 0.8rem;
+    }
+
+    .rate-item {
+        font-size: 0.75rem;
+    }
+
+    /* Compact tabs */
+    .calculator-tabs {
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .tab-btn {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+
+    /* Compact forms */
+    .calculator-container,
+    .tab-panel {
+        padding: 12px;
+    }
+
+    .form-group,
+    .rent-input-group,
+    .credit-input-group {
+        margin-bottom: 12px;
+    }
+
+    .form-group label,
+    .rent-input-group label,
+    .credit-input-group label {
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .rent-input-group input,
+    .credit-input-group input {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+
+    .hint,
+    .rent-hint,
+    .credit-hint {
+        font-size: 0.7rem;
+        margin-top: 2px;
+    }
+
+    /* Compact buttons */
+    .button-group,
+    .rent-button-group,
+    .credit-button-group {
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .calculate-btn,
+    .reset-btn,
+    .rent-calculate-btn,
+    .rent-reset-btn,
+    .credit-calculate-btn,
+    .credit-reset-btn {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+
+    /* Compact results */
+    .result,
+    .rent-result,
+    .credit-result {
+        padding: 12px;
+    }
+
+    .result-header,
+    .rent-results-header,
+    .credit-results-header {
+        margin-bottom: 12px;
+        padding-bottom: 6px;
+    }
+
+    .result-header h4,
+    .rent-results-header h4,
+    .credit-results-header h4 {
+        font-size: 0.85rem;
+    }
+
+    .results-subtitle {
+        font-size: 0.7rem;
+    }
+
+    .result-section,
+    .rent-result-section,
+    .credit-result-section {
+        padding: 10px;
+        margin-bottom: 12px;
+    }
+
+    .result-item,
+    .rent-result-item,
+    .credit-result-item {
+        padding: 4px 0;
+    }
+
+    .result-label,
+    .rent-result-label,
+    .credit-result-label {
+        font-size: 0.75rem;
+    }
+
+    .result-value,
+    .rent-result-value,
+    .credit-result-value {
+        font-size: 0.8rem;
+    }
+
+    .result-value.primary,
+    .rent-result-value.primary,
+    .credit-result-value.highlight {
+        font-size: 0.85rem;
+    }
+
+    /* Compact payment breakdown */
+    .payment-breakdown {
+        padding: 12px;
+        margin-top: 12px;
+    }
+
+    .breakdown-header {
+        margin-bottom: 12px;
+    }
+
+    .breakdown-header h5 {
+        font-size: 0.85rem;
+    }
+
+    .chart-row {
+        grid-template-columns: 110px 1fr 70px;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .chart-label {
+        font-size: 0.75rem;
+        gap: 4px;
+    }
+
+    .chart-icon {
+        font-size: 0.95rem;
+    }
+
+    .chart-bar-container {
+        height: 20px;
+    }
+
+    .chart-value {
+        font-size: 0.75rem;
+    }
+
+    .breakdown-total {
+        padding: 10px;
+        margin-top: 10px;
+    }
+
+    .total-label {
+        font-size: 0.85rem;
+    }
+
+    .total-value {
+        font-size: 0.9rem;
+    }
+
+    /* Compact loan limits */
+    .loan-limit-section {
+        padding: 12px;
+        margin: 12px 0;
+    }
+
+    .section-title {
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+    }
+
+    .location-search-inputs {
+        gap: 10px;
+    }
+
+    /* Compact loan type indicator */
+    .loan-type-indicator {
+        padding: 10px;
+        margin-top: 12px;
+    }
+
+    .badge {
+        padding: 3px 8px;
+        font-size: 0.65rem;
+    }
+
+    .county-limit {
+        font-size: 0.75rem;
+    }
+
+    /* Compact message and tooltip */
+    .message {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        margin-bottom: 12px;
+    }
+
+    .info-tooltip {
+        padding: 12px;
+        max-width: calc(100vw - 20px);
+    }
+
+    .tooltip-content {
+        font-size: 0.8rem;
+    }
+
+    /* Reduce spacing between elements */
+    .disclaimer,
+    .rent-disclaimer,
+    .credit-disclaimer {
+        font-size: 0.65rem;
+        margin-top: 6px;
+        padding-top: 6px;
+    }
+
+    /* Compact large payment display */
+    .payment-amount {
+        font-size: 1.6rem;
+    }
+
+    .payment-label {
+        font-size: 0.85rem;
+    }
+
+    .payment-highlight {
+        padding: 12px;
+    }
+
+    /* Reduce icon sizes */
+    .info-icon {
+        width: 18px;
+        height: 18px;
+        padding: 3px;
+    }
+
+    .info-icon svg {
+        width: 10px;
+        height: 10px;
+    }
+
+    /* Compact rate displays */
+    .rate-value {
+        font-size: 1rem;
+    }
+
+    .rate-label {
+        font-size: 0.7rem;
+    }
+
+    /* Make term headers more compact */
+    .term-label {
+        font-size: 0.8rem;
+    }
+
+    .term-rate {
+        font-size: 0.7rem;
+    }
+}
+
+/* Extra small screens - even more compact */
+@media (max-width: 360px) {
+    body {
+        padding: 5px;
+    }
+
+    .app-container {
+        padding: 3px;
+    }
+
+    .main-header {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .main-header h1 {
+        font-size: 1.1rem;
+    }
+
+    .main-header .subtitle {
+        font-size: 0.75rem;
+    }
+
+    .mortgage-rates.compact {
+        padding: 6px 8px;
+        margin-bottom: 10px;
+    }
+
+    .calculator-tabs {
+        gap: 4px;
+        margin-bottom: 10px;
+    }
+
+    .tab-btn {
+        padding: 6px 8px;
+        font-size: 0.75rem;
+    }
+
+    .calculator-container,
+    .tab-panel {
+        padding: 10px;
+    }
+
+    .payment-amount {
+        font-size: 1.4rem;
+    }
+
+    .payment-label {
+        font-size: 0.8rem;
+    }
+
+    .chart-row {
+        grid-template-columns: 90px 1fr 60px;
+        gap: 4px;
+    }
+
+    .chart-label {
+        font-size: 0.7rem;
+    }
+
+    .chart-value {
+        font-size: 0.7rem;
+    }
+
+    .breakdown-total {
+        padding: 8px;
+    }
+
+    .total-label {
+        font-size: 0.8rem;
+    }
+
+    .total-value {
+        font-size: 0.85rem;
+    }
 }
 
 /* Print styles */
