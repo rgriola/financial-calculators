@@ -138,9 +138,14 @@ const UIManager = {
         Object.keys(placeholders).forEach(id => {
             const element = document.getElementById(id);
             if (element) {
-                element.textContent = placeholders[id];
-                element.classList.add('placeholder');
-                element.classList.remove('calculated');
+                // Only set placeholder if element doesn't already have calculated values
+                // This prevents overwriting live rates that were already loaded
+                if (!element.classList.contains('calculated') && 
+                    !element.classList.contains('live-rate') && 
+                    !element.classList.contains('estimated')) {
+                    element.textContent = placeholders[id];
+                    element.classList.add('placeholder');
+                }
             }
         });
     },
