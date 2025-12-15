@@ -6,6 +6,7 @@
 
 import { AppConfig, ErrorHandler, ValidationConfig } from './config.js';
 import { Utils } from './utils.js';
+import { UIManager } from './ui-manager.js';
 
 /**
  * Credit card payoff calculator

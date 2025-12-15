@@ -8,6 +8,7 @@ import { AppConfig, ErrorHandler } from './config.js';
 import { SecurityUtils } from './security-utils.js';
 import { Validator } from './validation.js';
 import { Utils } from './utils.js';
+import { UIManager } from './ui-manager.js';
 
 /**
  * Mortgage calculator for computing monthly payments and amortization
@@ -66,9 +67,7 @@ export const MortgageCalculator = {
         AppConfig.log('info', 'Calculating mortgage payment...');
 
         // Hide previous messages
-        if (typeof UIManager !== 'undefined') {
-            UIManager.hideMessage();
-        }
+        UIManager.hideMessage();
 
         // Get and validate inputs
         const inputs = this.getSecureInputs();
@@ -83,9 +82,7 @@ export const MortgageCalculator = {
         const calculations = this.calculate(principal, interestRate, term);
 
         // Display results
-        if (typeof UIManager !== 'undefined') {
-            UIManager.displayMortgageResults(calculations, principal, interestRate, term);
-        }
+        UIManager.displayMortgageResults(calculations, principal, interestRate, term);
     },
 
     /**
@@ -155,11 +152,9 @@ export const MortgageCalculator = {
             input.classList.remove('valid', 'invalid');
         });
 
-        if (typeof UIManager !== 'undefined') {
-            UIManager.showMortgagePlaceholders();
-            UIManager.hideMessage();
-            UIManager.hideInfoTooltip();
-        }
+        UIManager.showMortgagePlaceholders();
+        UIManager.hideMessage();
+        UIManager.hideInfoTooltip();
 
         // Focus first input
         const principalInput = document.getElementById('principal');
@@ -167,9 +162,7 @@ export const MortgageCalculator = {
             principalInput.focus();
         }
 
-        if (typeof UIManager !== 'undefined') {
-            UIManager.showMessage('Mortgage Form Reset.', 'info');
-        }
+        UIManager.showMessage('Mortgage Form Reset.', 'info');
     },
 
     /**
@@ -235,13 +228,11 @@ export const MortgageCalculator = {
         const value = input.value.trim();
         const isValid = Validator.validateSingleInput(input.id, value);
 
-        if (typeof UIManager !== 'undefined') {
-            UIManager.updateInputValidation(input, isValid);
+        UIManager.updateInputValidation(input, isValid);
 
-            // Auto-clear error message when user starts inputting valid data
-            if (isValid && input.classList.contains('invalid')) {
-                UIManager.hideMessage();
-            }
+        // Auto-clear error message when user starts inputting valid data
+        if (isValid && input.classList.contains('invalid')) {
+            UIManager.hideMessage();
         }
     },
 
@@ -360,9 +351,7 @@ export const MortgageCalculator = {
             if (loanLimitSection) {
                 loanLimitSection.classList.add('hidden');
             }
-            if (typeof UIManager !== 'undefined') {
-                UIManager.hideLoanTypeIndicator();
-            }
+            UIManager.hideLoanTypeIndicator();
             return;
         }
 
@@ -377,9 +366,7 @@ export const MortgageCalculator = {
 
             if (!state) {
                 AppConfig.log('info', 'No state selected');
-                if (typeof UIManager !== 'undefined') {
-                    UIManager.hideLoanTypeIndicator();
-                }
+                UIManager.hideLoanTypeIndicator();
                 return;
             }
 
@@ -388,9 +375,7 @@ export const MortgageCalculator = {
             AppConfig.log('debug', 'Loan type determined', loanTypeInfo);
 
             // Update UI
-            if (typeof UIManager !== 'undefined') {
-                UIManager.updateLoanTypeIndicator(loanTypeInfo);
-            }
+            UIManager.updateLoanTypeIndicator(loanTypeInfo);
         }
     },
 

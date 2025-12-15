@@ -12,6 +12,9 @@ import { UIManager } from './ui-manager.js';
 import { MortgageRateService } from './mortgage-rates.js';
 import { Analytics } from './analytics.js';
 
+// Make UIManager available globally for legacy scripts (location-search.js, etc.)
+window.UIManager = UIManager;
+
 /**
  * Main application coordinator
  * @namespace FinancialCalculatorApp

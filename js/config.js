@@ -207,65 +207,51 @@ export const AppConfig = {
  */
 export const ErrorHandler = {
     /**
-     * Handle errors with logging and user notification
+     * Handle errors with logging
+     * Note: Calling code should handle showing messages to users via UIManager
      * @param {Error|string} error - Error object or message
-     * @param {string} userMessage - User-friendly message to display
-     * @param {boolean} showToUser - Whether to show message to user (default: true)
+     * @param {string} logMessage - Message to log (optional, defaults to error message)
+     * @param {boolean} logOnly - If true, only log without user notification (default: false)
+     * @returns {null} Always returns null for convenience
      */
-    handleError: function (error, userMessage = 'An error occurred', showToUser = true) {
+    handleError: function (error, logMessage = null, logOnly = false) {
         // Log the error
         const errorMessage = error instanceof Error ? error.message : error;
         const errorStack = error instanceof Error ? error.stack : undefined;
+        const messageToLog = logMessage || errorMessage;
 
-        AppConfig.log('error', errorMessage, {
-            userMessage,
+        AppConfig.log('error', messageToLog, {
+            error: errorMessage,
             stack: errorStack
         });
 
-        // Show to user if UIManager is available
-        if (showToUser) {
-            if (typeof UIManager !== 'undefined') {
-                UIManager.showMessage(userMessage, 'error');
-            } else {
-                // Fallback to console if UIManager not loaded yet
-                AppConfig.log('error', `UIManager not available. User message: ${userMessage}`);
-            }
-        }
-
-        // Could add analytics tracking here
-        return false; // Return false for convenience in validation
+        // Return null for convenience in validation
+        return null;
     },
 
     /**
      * Handle validation errors
+     * Note: Calling code should display the error message via UIManager
      * @param {Array<string>} errors - Array of validation error messages
-     * @returns {boolean} Always returns false
+     * @returns {null} Always returns null
      */
     handleValidationErrors: function (errors) {
-        if (errors.length === 0) return true;
+        if (errors.length === 0) return null;
 
-        const message = errors[0]; // Show first error
         AppConfig.log('warn', 'Validation failed', { errors });
 
-        if (typeof UIManager !== 'undefined') {
-            UIManager.showMessage(message, 'error');
-        }
-
-        return false;
+        return null;
     },
 
     /**
      * Handle API errors
      * @param {Error} error - API error
      * @param {string} endpoint - API endpoint that failed
+     * @returns {null} Always returns null
      */
     handleApiError: function (error, endpoint) {
         AppConfig.log('error', `API Error at ${endpoint}`, error);
-
-        const userMessage = 'Unable to fetch data. Please try again later.';
-        if (typeof UIManager !== 'undefined') {
-            UIManager.showMessage(userMessage, 'error');
-        }
+        return null;
     }
 };
 

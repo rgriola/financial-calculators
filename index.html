@@ -61,6 +61,21 @@
             </div>
         </div>
 
+        <!-- Jumbo Loan Alert -->
+        <div id="jumboLoanAlert" class="jumbo-loan-alert hidden">
+            <div class="alert-content">
+                <span class="alert-icon">⚠️</span>
+                <div class="alert-text">
+                    <strong>Jumbo Loan Detected</strong>
+                    <p>Your loan amount exceeds the baseline conforming limit of $832,750. This may qualify as a jumbo
+                        loan, which typically requires higher credit scores and larger down payments.</p>
+                    <button type="button" id="checkLocationBtn" class="check-location-btn">
+                        📍 Check Property Location
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Property Location Lookup Section -->
         <div id="loanLimitSection" class="loan-limit-section-external hidden">
             <div class="loan-limit-container">
@@ -109,6 +124,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- Message Notification -->
+        <div id="message" class="message hidden"></div>
 
         <!-- Tab Navigation -->
         <div class="calculator-tabs">

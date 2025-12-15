@@ -4,10 +4,11 @@
  * @module rent-calculator
  */
 
-import { AppConfig, RateDefaults, ErrorHandler } from './config.js';
+import { AppConfig, RateDefaults, ErrorHandler, ValidationConfig } from './config.js';
 import { SecurityUtils } from './security-utils.js';
 import { Validator } from './validation.js';
 import { Utils } from './utils.js';
+import { UIManager } from './ui-manager.js';
 
 /**
  * Rent to mortgage calculator for reverse mortgage calculations
@@ -119,10 +120,10 @@ export const RentCalculator = {
 
         // Validate rent input
         if (!Validator.validateRentInput(rentValue)) {
-            return ErrorHandler.handleError(
-                'Invalid rent amount',
-                `Please enter a valid rent amount between $${ValidationConfig.rent.min.toLocaleString()} and $${ValidationConfig.rent.max.toLocaleString()}.`
-            );
+            const errorMsg = `Please enter a valid rent amount between $${ValidationConfig.rent.min.toLocaleString()} and $${ValidationConfig.rent.max.toLocaleString()}.`;
+            UIManager.showMessage(errorMsg, 'error');
+            AppConfig.log('warn', 'Invalid rent amount', { value: rentValue });
+            return;
         }
 
         const monthlyRent = parseFloat(rentValue);
