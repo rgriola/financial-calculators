@@ -1,8 +1,32 @@
-// Core mortgage calculation logic
+/**
+ * Mortgage Calculator Module
+ * Core mortgage calculation logic and payment calculations
+ * @module mortgage-calculator
+ */
 
-const MortgageCalculator = {
-    // Perform mortgage calculations
-    calculate: function(principal, annualRate, years) {
+import { AppConfig, ErrorHandler } from './config.js';
+import { SecurityUtils } from './security-utils.js';
+import { Validator } from './validation.js';
+import { Utils } from './utils.js';
+
+/**
+ * Mortgage calculator for computing monthly payments and amortization
+ * @namespace MortgageCalculator
+ */
+export const MortgageCalculator = {
+    /**
+     * Calculate mortgage payment and totals
+     * @param {number} principal - Principal loan amount in dollars
+     * @param {number} annualRate - Annual interest rate as percentage (e.g., 4.5)
+     * @param {number} years - Loan term in years
+     * @returns {Object} Calculation results with monthlyPayment, totalAmount, totalInterest, interestRatio, numberOfPayments
+     * @example
+     * const result = MortgageCalculator.calculate(200000, 4.5, 30);
+     * console.log(result.monthlyPayment); // 1013.37
+     */
+    calculate: function (principal, annualRate, years) {
+        AppConfig.performance.start('mortgageCalculation');
+
         const monthlyRate = (annualRate / 100) / 12;
         const numberOfPayments = years * 12;
 
@@ -13,8 +37,8 @@ const MortgageCalculator = {
             monthlyPayment = principal / numberOfPayments;
         } else {
             // Standard mortgage payment formula: M = P * [r(1+r)^n] / [(1+r)^n - 1]
-            monthlyPayment = principal * 
-                (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
+            monthlyPayment = principal *
+                (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
                 (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
         }
 
@@ -22,6 +46,8 @@ const MortgageCalculator = {
         const totalAmount = monthlyPayment * numberOfPayments;
         const totalInterest = totalAmount - principal;
         const interestRatio = (totalInterest / principal) * 100;
+
+        AppConfig.performance.end('mortgageCalculation');
 
         return {
             monthlyPayment: monthlyPayment,
@@ -32,11 +58,17 @@ const MortgageCalculator = {
         };
     },
 
-    // Handle mortgage calculation process
-    handleCalculation: function() {
-        console.log('Calculating mortgage payment...');
+    /**
+     * Handle mortgage calculation process
+     * Gets inputs, validates, calculates, and displays results
+     */
+    handleCalculation: function () {
+        AppConfig.log('info', 'Calculating mortgage payment...');
 
-        UIManager.hideMessage();
+        // Hide previous messages
+        if (typeof UIManager !== 'undefined') {
+            UIManager.hideMessage();
+        }
 
         // Get and validate inputs
         const inputs = this.getSecureInputs();
@@ -51,21 +83,28 @@ const MortgageCalculator = {
         const calculations = this.calculate(principal, interestRate, term);
 
         // Display results
-        UIManager.displayMortgageResults(calculations, principal, interestRate, term);
+        if (typeof UIManager !== 'undefined') {
+            UIManager.displayMortgageResults(calculations, principal, interestRate, term);
+        }
     },
 
-    // Get and validate inputs securely
-    getSecureInputs: function() {
-        console.log('=== Getting secure inputs ===');
-        
+    /**
+     * Get and validate inputs securely
+     * @returns {Object|null} Object with principal, interestRate, term or null if invalid
+     */
+    getSecureInputs: function () {
+        AppConfig.log('debug', 'Getting secure inputs');
+
         const principalInput = document.getElementById('principal');
         const interestRateInput = document.getElementById('interestRate');
         const termInput = document.getElementById('term');
 
         if (!principalInput || !interestRateInput || !termInput) {
-            console.error('Form elements not found');
-            UIManager.showMessage('Form elements not found. Please refresh the page.', 'error');
-            return null;
+            AppConfig.log('error', 'Form elements not found');
+            return ErrorHandler.handleError(
+                'Form elements not found',
+                'Form elements not found. Please refresh the page.'
+            );
         }
 
         // Get sanitized values
@@ -73,21 +112,19 @@ const MortgageCalculator = {
         const interestRateValue = SecurityUtils.sanitizeInput(interestRateInput.value);
         const termValue = SecurityUtils.sanitizeInput(termInput.value);
 
-        console.log('Raw input values:', {
-            principal: principalInput.value,
-            principalSanitized: principalValue,
+        AppConfig.log('debug', 'Sanitized input values', {
+            principal: principalValue,
             interestRate: interestRateValue,
             term: termValue
         });
 
         // Validate all inputs
         const validation = Validator.validateMortgageInputs(principalValue, interestRateValue, termValue);
-        console.log('Validation result:', validation);
-        
+        AppConfig.log('debug', 'Validation result', validation);
+
         if (!validation.isValid) {
-            console.warn('Validation failed:', validation.errors);
-            UIManager.showMessage(validation.errors[0], 'error');
-            return null;
+            AppConfig.log('warn', 'Validation failed', validation.errors);
+            return ErrorHandler.handleValidationErrors(validation.errors);
         }
 
         const parsedInputs = {
@@ -95,15 +132,18 @@ const MortgageCalculator = {
             interestRate: parseFloat(interestRateValue),
             term: parseInt(termValue, 10)
         };
-        
-        console.log('Parsed inputs:', parsedInputs);
+
+        AppConfig.log('debug', 'Parsed inputs', parsedInputs);
         return parsedInputs;
     },
 
-    // Handle form reset
-    handleReset: function() {
-        console.log('Resetting mortgage form...');
-        
+    /**
+     * Handle form reset
+     * Clears form, removes validation classes, restores placeholders
+     */
+    handleReset: function () {
+        AppConfig.log('info', 'Resetting mortgage form...');
+
         const form = document.getElementById('mortgageForm');
         if (form) {
             form.reset();
@@ -115,9 +155,11 @@ const MortgageCalculator = {
             input.classList.remove('valid', 'invalid');
         });
 
-        UIManager.showMortgagePlaceholders();
-        UIManager.hideMessage();
-        UIManager.hideInfoTooltip();
+        if (typeof UIManager !== 'undefined') {
+            UIManager.showMortgagePlaceholders();
+            UIManager.hideMessage();
+            UIManager.hideInfoTooltip();
+        }
 
         // Focus first input
         const principalInput = document.getElementById('principal');
@@ -125,11 +167,16 @@ const MortgageCalculator = {
             principalInput.focus();
         }
 
-        UIManager.showMessage('Mortage Form Reset.', 'info');
+        if (typeof UIManager !== 'undefined') {
+            UIManager.showMessage('Mortgage Form Reset.', 'info');
+        }
     },
 
-    // Setup event listeners
-    setupEventListeners: function() {
+    /**
+     * Setup event listeners for mortgage calculator
+     * Attaches click handlers and input validation
+     */
+    setupEventListeners: function () {
         const calculateButton = document.getElementById('calculateButton');
         const resetButton = document.getElementById('resetButton');
         const form = document.getElementById('mortgageForm');
@@ -155,94 +202,112 @@ const MortgageCalculator = {
             });
         }
 
-        // Add input validation listeners
+        // Add input validation listeners with debouncing
         const inputs = ['principal', 'interestRate', 'term'];
         inputs.forEach(inputId => {
             const input = document.getElementById(inputId);
             if (input) {
-                input.addEventListener('input', () => {
-                    // Format principal input with commas
-                    if (inputId === 'principal') {
+                // Immediate formatting for principal
+                if (inputId === 'principal') {
+                    input.addEventListener('input', () => {
                         this.formatPrincipalInput(input);
-                    }
+                    });
+                }
+
+                // Debounced validation
+                const debouncedValidate = Utils.debounce(() => {
                     this.validateInput(input);
-                });
+                }, AppConfig.ui.debounceDelay);
+
+                input.addEventListener('input', debouncedValidate);
                 input.addEventListener('blur', () => this.validateInput(input));
             }
         });
     },
 
-    // Validate individual input
-    validateInput: function(input) {
+    /**
+     * Validate individual input field
+     * @param {HTMLInputElement} input - Input element to validate
+     */
+    validateInput: function (input) {
         if (!input) return;
 
         const value = input.value.trim();
         const isValid = Validator.validateSingleInput(input.id, value);
-        UIManager.updateInputValidation(input, isValid);
-    },
 
-    // Format principal input with commas
-    formatPrincipalInput: function(input) {
-        if (!input || input.id !== 'principal') return;
-        
-        const cursorPosition = input.selectionStart;
-        const oldValue = input.value;
-        const oldLength = oldValue.length;
-        
-        // Format the value with commas
-        const formatted = SecurityUtils.formatNumberWithCommas(oldValue);
-        
-        console.log('Formatting principal:', {
-            oldValue,
-            formatted,
-            cursorPosition
-        });
-        
-        if (formatted !== oldValue) {
-            input.value = formatted;
-            
-            // Calculate new cursor position
-            // Count commas before cursor in old and new values
-            const oldCommasBefore = (oldValue.substring(0, cursorPosition).match(/,/g) || []).length;
-            const newCommasBefore = (formatted.substring(0, cursorPosition).match(/,/g) || []).length;
-            const commaDiff = newCommasBefore - oldCommasBefore;
-            
-            // Adjust cursor position
-            const newPosition = Math.min(cursorPosition + commaDiff, formatted.length);
-            
-            console.log('Cursor adjustment:', {
-                oldCommasBefore,
-                newCommasBefore,
-                commaDiff,
-                newPosition
-            });
-            
-            // Set cursor position (only works with type="text")
-            try {
-                input.setSelectionRange(newPosition, newPosition);
-            } catch (e) {
-                // Silently fail if input type doesn't support selection
-                console.warn('Unable to set cursor position:', e.message);
+        if (typeof UIManager !== 'undefined') {
+            UIManager.updateInputValidation(input, isValid);
+
+            // Auto-clear error message when user starts inputting valid data
+            if (isValid && input.classList.contains('invalid')) {
+                UIManager.hideMessage();
             }
         }
     },
 
-    // Generate amortization schedule
-    generateAmortizationSchedule: function(principal, annualRate, years) {
+    /**
+     * Format principal input with commas during input
+     * @param {HTMLInputElement} input - Principal input element
+     */
+    formatPrincipalInput: function (input) {
+        if (!input || input.id !== 'principal') return;
+
+        const cursorPosition = input.selectionStart;
+        const oldValue = input.value;
+
+        // Format the value with commas
+        const formatted = Utils.formatNumberWithCommas(oldValue);
+
+        AppConfig.log('debug', 'Formatting principal', {
+            oldValue,
+            formatted,
+            cursorPosition
+        });
+
+        if (formatted !== oldValue) {
+            input.value = formatted;
+
+            // Calculate new cursor position
+            const oldCommasBefore = (oldValue.substring(0, cursorPosition).match(/,/g) || []).length;
+            const newCommasBefore = (formatted.substring(0, cursorPosition).match(/,/g) || []).length;
+            const commaDiff = newCommasBefore - oldCommasBefore;
+
+            // Adjust cursor position
+            const newPosition = Math.min(cursorPosition + commaDiff, formatted.length);
+
+            // Set cursor position
+            try {
+                input.setSelectionRange(newPosition, newPosition);
+            } catch (e) {
+                AppConfig.log('warn', 'Unable to set cursor position', e.message);
+            }
+        }
+    },
+
+    /**
+     * Generate amortization schedule
+     * @param {number} principal - Principal loan amount
+     * @param {number} annualRate - Annual interest rate
+     * @param {number} years - Loan term in years
+     * @param {number|null} maxMonths - Maximum months to generate (null for all)
+     * @returns {Array} Array of payment objects with month, payment, principal, interest, balance
+     */
+    generateAmortizationSchedule: function (principal, annualRate, years, maxMonths = null) {
         AppConfig.performance.start('generateAmortization');
-        
+
         const monthlyRate = (annualRate / 100) / 12;
         const numberOfPayments = years * 12;
+        const limit = maxMonths || numberOfPayments;
         const monthlyPayment = this.calculate(principal, annualRate, years).monthlyPayment;
-        
+
         const schedule = [];
         let balance = principal;
-        
-        for (let month = 1; month <= numberOfPayments; month++) {
+
+        for (let month = 1; month <= Math.min(limit, numberOfPayments); month++) {
             const interestPayment = balance * monthlyRate;
             const principalPayment = monthlyPayment - interestPayment;
             balance -= principalPayment;
-            
+
             schedule.push({
                 month: month,
                 payment: monthlyPayment,
@@ -251,120 +316,112 @@ const MortgageCalculator = {
                 balance: Math.max(0, balance)
             });
         }
-        
+
         AppConfig.performance.end('generateAmortization');
         AppConfig.log('debug', 'Amortization schedule generated', { payments: schedule.length });
-        
+
         return schedule;
     },
 
-    // Check loan limits based on property location
-    checkLoanLimits: function(principal) {
-        console.log('=== checkLoanLimits called ===');
-        console.log('Principal:', principal);
-        
+    /**
+     * Check loan limits based on property location
+     * @param {number} principal - Principal loan amount
+     */
+    checkLoanLimits: function (principal) {
+        AppConfig.log('debug', 'Checking loan limits', { principal });
+
         const loanLimitSection = document.getElementById('loanLimitSection');
         const jumboAlert = document.getElementById('jumboLoanAlert');
 
-        console.log('Elements found:', {
-            loanLimitSection: !!loanLimitSection,
-            jumboAlert: !!jumboAlert
-        });
-
         // Only check if LoanLimitService is available
         if (typeof LoanLimitService === 'undefined') {
-            console.warn('LoanLimitService not available');
+            AppConfig.log('warn', 'LoanLimitService not available');
             return;
         }
 
         const baselineLimit = LoanLimitService.getBaselineLimit();
-        console.log('Baseline limit:', baselineLimit);
-        console.log('Principal > baseline?', principal > baselineLimit);
+        AppConfig.log('debug', 'Baseline limit comparison', {
+            principal,
+            baselineLimit,
+            exceeds: principal > baselineLimit
+        });
 
         // Show/hide the jumbo alert based on principal amount
         if (principal > baselineLimit) {
-            // Show the alert if principal exceeds baseline
-            console.log('Showing jumbo alert');
+            AppConfig.log('info', 'Principal exceeds baseline - showing jumbo alert');
             if (jumboAlert) {
                 jumboAlert.classList.remove('hidden');
-                console.log('Jumbo alert displayed');
             }
         } else {
-            // Hide the alert if principal is below baseline
-            console.log('Hiding jumbo alert and location section');
+            AppConfig.log('info', 'Principal below baseline - hiding alerts');
             if (jumboAlert) {
                 jumboAlert.classList.add('hidden');
             }
-            // Also hide the property location section and indicator
             if (loanLimitSection) {
                 loanLimitSection.classList.add('hidden');
-                console.log('Location section hidden');
             }
-            UIManager.hideLoanTypeIndicator();
+            if (typeof UIManager !== 'undefined') {
+                UIManager.hideLoanTypeIndicator();
+            }
             return;
         }
 
         // If property location section is visible, check the loan type
         const sectionIsVisible = loanLimitSection && !loanLimitSection.classList.contains('hidden');
-        console.log('Location section visible?', sectionIsVisible);
-        
+
         if (sectionIsVisible && typeof LocationSearch !== 'undefined') {
             const state = LocationSearch.getSelectedState();
             const county = LocationSearch.getSelectedCounty();
 
-            console.log('Selected location:', { state, county });
+            AppConfig.log('debug', 'Checking loan type for location', { state, county });
 
             if (!state) {
-                // No state selected, hide indicator
-                console.log('No state selected, hiding indicator');
-                UIManager.hideLoanTypeIndicator();
+                AppConfig.log('info', 'No state selected');
+                if (typeof UIManager !== 'undefined') {
+                    UIManager.hideLoanTypeIndicator();
+                }
                 return;
             }
 
             // Determine loan type
             const loanTypeInfo = LoanLimitService.determineLoanType(principal, state, county);
-            console.log('Loan type determined:', loanTypeInfo);
-            
+            AppConfig.log('debug', 'Loan type determined', loanTypeInfo);
+
             // Update UI
-            UIManager.updateLoanTypeIndicator(loanTypeInfo);
-            console.log('UI updated with loan type info');
+            if (typeof UIManager !== 'undefined') {
+                UIManager.updateLoanTypeIndicator(loanTypeInfo);
+            }
         }
-        
-        console.log('=== checkLoanLimits complete ===');
     },
 
-    // Setup location change handlers
-    setupLocationHandlers: function() {
-        console.log('=== Setting up location handlers ===');
-        
+    /**
+     * Setup location change handlers for loan limit checking
+     */
+    setupLocationHandlers: function () {
+        AppConfig.log('info', 'Setting up location handlers');
+
         const principalInput = document.getElementById('principal');
         const checkLocationBtn = document.getElementById('checkLocationBtn');
 
-        console.log('Handler elements:', {
-            principalInput: !!principalInput,
-            checkLocationBtn: !!checkLocationBtn
-        });
-
         // Initialize LocationSearch if available
         if (typeof LocationSearch !== 'undefined') {
-            console.log('Initializing LocationSearch');
+            AppConfig.log('info', 'Initializing LocationSearch');
             LocationSearch.init();
         } else {
-            console.warn('LocationSearch not available');
+            AppConfig.log('warn', 'LocationSearch not available');
         }
 
         // Handle principal change
         if (principalInput) {
             principalInput.addEventListener('input', () => {
                 const principal = parseFloat(principalInput.value.replace(/,/g, ''));
-                console.log('Principal input changed to:', principal);
-                
+
                 if (!isNaN(principal) && principal > 0) {
                     this.checkLoanLimits(principal);
                 } else {
-                    console.log('Invalid or zero principal, hiding elements');
-                    UIManager.hideLoanTypeIndicator();
-                    // Hide alert and location section when no principal
+                    if (typeof UIManager !== 'undefined') {
+                        UIManager.hideLoanTypeIndicator();
+                    }
                     const jumboAlert = document.getElementById('jumboLoanAlert');
                     const loanLimitSection = document.getElementById('loanLimitSection');
                     if (jumboAlert) jumboAlert.classList.add('hidden');
@@ -374,26 +431,21 @@ const MortgageCalculator = {
         }
 
         // Handle "Check Property Location" button click
-        console.log('Check location button found:', !!checkLocationBtn);
-        
         if (checkLocationBtn) {
             checkLocationBtn.addEventListener('click', () => {
-                console.log('=== Check Property Location button clicked ===');
+                AppConfig.log('info', 'Check Property Location button clicked');
                 const loanLimitSection = document.getElementById('loanLimitSection');
-                
+
                 if (loanLimitSection) {
-                    console.log('Showing location section');
                     loanLimitSection.classList.remove('hidden');
-                    console.log('Section classes after remove:', loanLimitSection.className);
-                    
+
                     // Scroll to the section smoothly
                     setTimeout(() => {
-                        console.log('Scrolling to location section');
-                        loanLimitSection.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start' 
+                        loanLimitSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
                         });
-                        
+
                         // Focus on state input
                         const stateInput = document.getElementById('stateSearch');
                         if (stateInput) {
@@ -404,22 +456,14 @@ const MortgageCalculator = {
                     // Re-check loan limits if principal is filled
                     if (principalInput && principalInput.value) {
                         const principal = parseFloat(principalInput.value.replace(/,/g, ''));
-                        console.log('Re-checking loan limits with principal:', principal);
                         if (!isNaN(principal)) {
                             this.checkLoanLimits(principal);
                         }
                     }
-                } else {
-                    console.error('Loan limit section not found!');
                 }
             });
         }
-        
-        console.log('=== Location handlers setup complete ===');
     }
 };
 
-// Export for module use
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = MortgageCalculator;
-}
+export default MortgageCalculator;

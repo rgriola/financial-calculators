@@ -1,8 +1,30 @@
-// Rent to mortgage calculation logic
+/**
+ * Rent to Mortgage Calculator Module
+ * Calculate affordable mortgage principal from monthly rent payment
+ * @module rent-calculator
+ */
 
-const RentCalculator = {
-    // Calculate affordable principal (reverse mortgage calculation)
-    calculateAffordablePrincipal: function(monthlyPayment, annualRate, years) {
+import { AppConfig, RateDefaults, ErrorHandler } from './config.js';
+import { SecurityUtils } from './security-utils.js';
+import { Validator } from './validation.js';
+import { Utils } from './utils.js';
+
+/**
+ * Rent to mortgage calculator for reverse mortgage calculations
+ * @namespace RentCalculator
+ */
+export const RentCalculator = {
+    /**
+     * Calculate affordable principal from monthly payment (reverse mortgage calculation)
+     * @param {number} monthlyPayment - Monthly payment amount
+     * @param {number} annualRate - Annual interest rate as percentage
+     * @param {number} years - Loan term in years
+     * @returns {number} Maximum affordable principal
+     * @example
+     * const affordable = RentCalculator.calculateAffordablePrincipal(2000, 4.5, 30);
+     * console.log(affordable); // Approximately 395,000
+     */
+    calculateAffordablePrincipal: function (monthlyPayment, annualRate, years) {
         const monthlyRate = (annualRate / 100) / 12;
         const numberOfPayments = years * 12;
 
@@ -11,28 +33,31 @@ const RentCalculator = {
         }
 
         // Reverse mortgage formula: P = M * [(1+r)^n - 1] / [r(1+r)^n]
-        const principal = monthlyPayment * 
-            (Math.pow(1 + monthlyRate, numberOfPayments) - 1) / 
+        const principal = monthlyPayment *
+            (Math.pow(1 + monthlyRate, numberOfPayments) - 1) /
             (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments));
 
         return principal;
     },
 
-    // Get current mortgage rates from UI (enhanced with better detection)
-    getCurrentMortgageRates: function() {
+    /**
+     * Get current mortgage rates from UI with fallback handling
+     * @returns {Object} Object with rate30yr, rate15yr, and fallback flags
+     */
+    getCurrentMortgageRates: function () {
         const rate30Element = document.getElementById('rate-30yr');
         const rate15Element = document.getElementById('rate-15yr');
-        
+
         let rate30yr = null;
         let rate15yr = null;
 
         // Check 30-year rate
-        if (rate30Element && 
-            rate30Element.textContent !== '...' && 
+        if (rate30Element &&
+            rate30Element.textContent !== '...' &&
             rate30Element.textContent !== 'N/A' &&
             rate30Element.textContent.trim() !== '' &&
             !rate30Element.textContent.includes('Loading')) {
-            
+
             const rateText = rate30Element.textContent.replace('%', '').trim();
             const parsedRate = parseFloat(rateText);
             if (!isNaN(parsedRate) && parsedRate > 0) {
@@ -41,12 +66,12 @@ const RentCalculator = {
         }
 
         // Check 15-year rate
-        if (rate15Element && 
-            rate15Element.textContent !== '...' && 
+        if (rate15Element &&
+            rate15Element.textContent !== '...' &&
             rate15Element.textContent !== 'N/A' &&
             rate15Element.textContent.trim() !== '' &&
             !rate15Element.textContent.includes('Loading')) {
-            
+
             const rateText = rate15Element.textContent.replace('%', '').trim();
             const parsedRate = parseFloat(rateText);
             if (!isNaN(parsedRate) && parsedRate > 0) {
@@ -56,13 +81,15 @@ const RentCalculator = {
 
         // Fallback rates if API data not available
         if (!rate30yr) {
-            console.warn('30-year rate not available from API, using fallback');
-            rate30yr = 7.25; // Current market average fallback
+            AppConfig.log('warn', '30-year rate not available from API, using fallback', {
+                fallback: RateDefaults.fallback30yr
+            });
+            rate30yr = RateDefaults.fallback30yr;
         }
 
         if (!rate15yr) {
-            console.warn('15-year rate not available from API, using estimated rate');
-            rate15yr = rate30yr - 0.5; // Typical 15-year spread
+            AppConfig.log('warn', '15-year rate not available from API, using estimated rate');
+            rate15yr = rate30yr + RateDefaults.spread15yr;
         }
 
         return {
@@ -73,30 +100,37 @@ const RentCalculator = {
         };
     },
 
-    // Handle rent calculation with multiple terms
-    handleCalculation: function() {
-        console.log('Calculating affordable mortgage from rent...');
+    /**
+     * Handle rent calculation with multiple loan terms
+     * Calculates affordable mortgage for 15, 30, and 50 year terms
+     */
+    handleCalculation: function () {
+        AppConfig.log('info', 'Calculating affordable mortgage from rent...');
 
         const rentInput = document.getElementById('rentAmount');
         if (!rentInput) {
-            UIManager.showMessage('Rent input not found.', 'error');
-            return;
+            return ErrorHandler.handleError(
+                'Rent input not found',
+                'Rent input not found.'
+            );
         }
 
         const rentValue = SecurityUtils.sanitizeInput(rentInput.value);
-        
+
         // Validate rent input
         if (!Validator.validateRentInput(rentValue)) {
-            UIManager.showMessage('Please enter a valid rent amount between $500 and $20,000.', 'error');
-            return;
+            return ErrorHandler.handleError(
+                'Invalid rent amount',
+                `Please enter a valid rent amount between $${ValidationConfig.rent.min.toLocaleString()} and $${ValidationConfig.rent.max.toLocaleString()}.`
+            );
         }
 
         const monthlyRent = parseFloat(rentValue);
 
         // Get current mortgage rates (with fallback detection)
         const rates = this.getCurrentMortgageRates();
-        
-        console.log('Using rates:', rates);
+
+        AppConfig.log('info', 'Using rates for calculation', rates);
 
         // Calculate for all three terms
         const calculations = {
@@ -115,11 +149,11 @@ const RentCalculator = {
                 usingFallback: rates.usingFallback30
             },
             '50yr': {
-                rate: rates.rate30yr + 0.5, // Always estimated
+                rate: rates.rate30yr + RateDefaults.spread50yr,
                 term: 50,
                 principal: 0,
                 totalInterest: 0,
-                usingFallback: true // Always true for 50-year
+                usingFallback: true // Always estimated
             }
         };
 
@@ -134,27 +168,36 @@ const RentCalculator = {
         this.displayResults(calculations);
 
         // Show appropriate message based on rate source
-        if (rates.usingFallback30 || rates.usingFallback15) {
-            UIManager.showMessage('Calculation complete using estimated rates - live rates may not be available.', 'info');
-        } else {
-            UIManager.showMessage('Calculation complete using current market rates!', 'success');
+        if (typeof UIManager !== 'undefined') {
+            if (rates.usingFallback30 || rates.usingFallback15) {
+                UIManager.showMessage('Calculation complete using estimated rates - live rates may not be available.', 'info');
+            } else {
+                UIManager.showMessage('Calculation complete using current market rates!', 'success');
+            }
         }
     },
 
-    // Display multiple rent calculation results
-    displayResults: function(calculations) {
+    /**
+     * Display multiple rent calculation results for all terms
+     * @param {Object} calculations - Calculation results for 15yr, 30yr, 50yr
+     */
+    displayResults: function (calculations) {
         // Update 15-year results
         this.updateResultElements('15yr', calculations['15yr']);
-        
+
         // Update 30-year results
         this.updateResultElements('30yr', calculations['30yr']);
-        
+
         // Update 50-year results
         this.updateResultElements('50yr', calculations['50yr']);
     },
 
-    // Update rent result elements for a specific term
-    updateResultElements: function(term, calculation) {
+    /**
+     * Update rent result elements for a specific term
+     * @param {string} term - Term identifier (15yr, 30yr, 50yr)
+     * @param {Object} calculation - Calculation results for this term
+     */
+    updateResultElements: function (term, calculation) {
         const rateElement = document.getElementById(`rate${term.charAt(0).toUpperCase() + term.slice(1)}Display`);
         const principalElement = document.getElementById(`principal${term}`);
         const interestElement = document.getElementById(`totalInterest${term}`);
@@ -168,7 +211,7 @@ const RentCalculator = {
             } else {
                 rateText = `${calculation.rate.toFixed(2)}% rate`;
             }
-            
+
             rateElement.textContent = rateText;
             rateElement.classList.remove('placeholder');
             rateElement.classList.add('calculated');
@@ -182,54 +225,62 @@ const RentCalculator = {
         }
 
         if (principalElement) {
-            principalElement.textContent = '$' + SecurityUtils.formatCurrency(calculation.principal);
+            principalElement.textContent = '$' + Utils.formatCurrency(calculation.principal);
             principalElement.classList.remove('placeholder');
             principalElement.classList.add('calculated');
         }
 
         if (interestElement) {
-            interestElement.textContent = '$' + SecurityUtils.formatCurrency(calculation.totalInterest);
+            interestElement.textContent = '$' + Utils.formatCurrency(calculation.totalInterest);
             interestElement.classList.remove('placeholder');
             interestElement.classList.add('calculated');
         }
     },
 
-    // Initialize rent placeholders to show current rates immediately
-    initializeWithCurrentRates: function() {
+    /**
+     * Initialize rent placeholders to show current rates immediately
+     * Called when rates are loaded to update display before calculation
+     */
+    initializeWithCurrentRates: function () {
         const rates = this.getCurrentMortgageRates();
-        
+
+        AppConfig.log('info', 'Initializing rent calculator with current rates', rates);
+
         // Update rate displays immediately without calculation
         const rate15Element = document.getElementById('rate15Display');
         const rate30Element = document.getElementById('rate30Display');
         const rate50Element = document.getElementById('rate50Display');
 
         if (rate15Element) {
-            const rateText = rates.usingFallback15 ? 
-                `${rates.rate15yr.toFixed(2)}% est.` : 
+            const rateText = rates.usingFallback15 ?
+                `${rates.rate15yr.toFixed(2)}% est.` :
                 `${rates.rate15yr.toFixed(2)}% rate`;
             rate15Element.textContent = rateText;
             rate15Element.classList.remove('placeholder');
         }
 
         if (rate30Element) {
-            const rateText = rates.usingFallback30 ? 
-                `${rates.rate30yr.toFixed(2)}% est.` : 
+            const rateText = rates.usingFallback30 ?
+                `${rates.rate30yr.toFixed(2)}% est.` :
                 `${rates.rate30yr.toFixed(2)}% rate`;
             rate30Element.textContent = rateText;
             rate30Element.classList.remove('placeholder');
         }
 
         if (rate50Element) {
-            const estimatedRate = rates.rate30yr + 0.5;
+            const estimatedRate = rates.rate30yr + RateDefaults.spread50yr;
             rate50Element.textContent = `${estimatedRate.toFixed(2)}% est.*`;
             rate50Element.classList.remove('placeholder');
         }
     },
 
-    // Handle rent form reset
-    handleReset: function() {
-        console.log('Resetting rent form...');
-        
+    /**
+     * Handle rent form reset
+     * Clears form and restores placeholders while keeping rate data
+     */
+    handleReset: function () {
+        AppConfig.log('info', 'Resetting rent form...');
+
         const rentForm = document.getElementById('rentForm');
         if (rentForm) {
             rentForm.reset();
@@ -242,8 +293,10 @@ const RentCalculator = {
         }
 
         // Restore placeholders for calculations but keep rate data
-        UIManager.showRentPlaceholders();
-        
+        if (typeof UIManager !== 'undefined') {
+            UIManager.showRentPlaceholders();
+        }
+
         // Re-initialize with current rates
         setTimeout(() => {
             this.initializeWithCurrentRates();
@@ -254,11 +307,16 @@ const RentCalculator = {
             rentInput.focus();
         }
 
-        UIManager.showMessage('Rent Form Reset.', 'info');
+        if (typeof UIManager !== 'undefined') {
+            UIManager.showMessage('Rent Form Reset.', 'info');
+        }
     },
 
-    // Setup event listeners
-    setupEventListeners: function() {
+    /**
+     * Setup event listeners for rent calculator
+     * Attaches click handlers and input validation
+     */
+    setupEventListeners: function () {
         const calculateRentButton = document.getElementById('calculateRentButton');
         const resetRentButton = document.getElementById('resetRentButton');
         const rentForm = document.getElementById('rentForm');
@@ -284,25 +342,37 @@ const RentCalculator = {
             });
         }
 
-        // Add input validation for rent amount
+        // Add input validation for rent amount with debouncing
         const rentInput = document.getElementById('rentAmount');
         if (rentInput) {
-            rentInput.addEventListener('input', () => this.validateInput(rentInput));
+            const debouncedValidate = Utils.debounce(() => {
+                this.validateInput(rentInput);
+            }, AppConfig.ui.debounceDelay);
+
+            rentInput.addEventListener('input', debouncedValidate);
             rentInput.addEventListener('blur', () => this.validateInput(rentInput));
         }
     },
 
-    // Validate rent input
-    validateInput: function(input) {
+    /**
+     * Validate rent input
+     * @param {HTMLInputElement} input - Rent input element
+     */
+    validateInput: function (input) {
         if (!input) return;
 
         const value = input.value.trim();
         const isValid = Validator.validateSingleInput(input.id, value);
-        UIManager.updateInputValidation(input, isValid);
+
+        if (typeof UIManager !== 'undefined') {
+            UIManager.updateInputValidation(input, isValid);
+
+            // Auto-clear error message when user starts inputting valid data
+            if (isValid && input.classList.contains('invalid')) {
+                UIManager.hideMessage();
+            }
+        }
     }
 };
 
-// Export for module use
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = RentCalculator;
-}
+export default RentCalculator;

@@ -2141,3 +2141,157 @@ button:focus {
         font-size: 0.8rem;
     }
 }
+
+/* ============================================================================
+   LOADING STATES - Added for Phase 5 enhancements
+   ============================================================================ */
+
+/* Loading button state */
+.calculate-btn.loading,
+.rent-calculate-btn.loading,
+.credit-calculate-btn.loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.calculate-btn.loading::after,
+.rent-calculate-btn.loading::after,
+.credit-calculate-btn.loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { 
+        transform: rotate(360deg); 
+    }
+}
+
+/* ============================================================================
+   ACCESSIBILITY - Screen Reader Only Elements
+   ============================================================================ */
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ============================================================================
+   MOBILE TOUCH TARGETS - Enhanced for Better UX
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    /* Ensure minimum 44x44px touch targets per Apple HIG */
+    .calculate-btn,
+    .reset-btn,
+    .rent-calculate-btn,
+    .rent-reset-btn,
+    .credit-calculate-btn,
+    .credit-reset-btn,
+    .info-icon,
+    .refresh-btn-compact {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 12px 20px;
+        touch-action: manipulation; /* Disable double-tap zoom */
+    }
+    
+    /* Larger refresh button on mobile */
+    .refresh-btn-compact {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        max-width: 32px;
+    }
+    
+    .refresh-btn-compact svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    /* Larger tap targets for tabs */
+    .tab-btn {
+        min-height: 44px;
+        padding: 12px 16px;
+    }
+    
+    /* Increase input height for easier tapping */
+    .form-group input,
+    .rent-input-group input,
+    .credit-input-group input {
+        min-height: 44px;
+        padding: 12px;
+        font-size: 16px; /* Prevents iOS auto-zoom */
+    }
+}
+
+/* ============================================================================
+   SMOOTH TRANSITIONS FOR ERROR STATES
+   ============================================================================ */
+
+.form-group input,
+.rent-input-group input,
+.credit-input-group input {
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.message {
+    transition: opacity 0.3s ease;
+}
+
+.message.hidden {
+    opacity: 0;
+}
+
+/* ============================================================================
+   ENHANCED FOCUS STATES FOR ACCESSIBILITY
+   ============================================================================ */
+
+*:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+
+@media print {
+    .main-header,
+    .mortgage-rates,
+    .calculator-tabs,
+    button {
+        display: none;
+    }
+    
+    .result,
+    .rent-result,
+    .credit-result {
+        page-break-inside: avoid;
+    }
+}

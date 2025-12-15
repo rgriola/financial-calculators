@@ -74,27 +74,38 @@ php -S localhost:8000
 financial-calculators/
 ├── index.html                   # Main HTML file
 ├── styles.css                   # All styling and responsive design
-├── js/                          # Modular JavaScript architecture
-│   ├── app.js                   # Main initialization and coordination
+├── js/                          # ES6 Modular JavaScript architecture
+│   ├── app.js                   # Main entry point (ES6 module)
+│   ├── config.js                # Consolidated configuration & error handling
+│   ├── utils.js                 # Utility functions (debounce, formatting, etc.)
+│   ├── security-utils.js        # Security and sanitization utilities
+│   ├── validation.js            # Input validation with field-specific errors
+│   ├── ui-manager.js            # UI updates and interactions (with loading states)
 │   ├── mortgage-calculator.js   # Core mortgage calculation logic
 │   ├── rent-calculator.js       # Rent-to-mortgage calculations
-│   ├── ui-manager.js           # UI updates and interactions
-│   ├── validation.js           # Input validation utilities
-│   └── security-utils.js       # Security and sanitization
-├── mortgage-rates.js           # API service for live mortgage rates
-├── README.md                   # Project documentation
-├── .gitignore                  # Git ignore rules
-└── LICENSE (optional)          # MIT License
+│   ├── credit-card-calculator.js # Credit card payoff calculator
+│   ├── mortgage-rates.js        # API service for live mortgage rates
+│   ├── loan-limits-data.js      # 2026 FHFA loan limits data
+│   ├── loan-limits.js           # Loan limit calculation logic
+│   ├── location-search.js       # Property location search
+│   ├── storage-manager.js       # Local storage management
+│   └── analytics.js             # Analytics tracking
+├── README.md                    # Project documentation
+├── .gitignore                   # Git ignore rules
+└── LICENSE (optional)           # MIT License
 ```
 
 ## 🔒 Security Features
 
 - **Content Security Policy (CSP)** - Prevents XSS attacks
+- **ES6 Module Architecture** - Modern, secure module loading
+- **Centralized Error Handling** - Consistent error management across all modules
 - **Modular Architecture** - Separation of concerns for security
 - **Input Sanitization** - All user inputs are validated and sanitized
 - **HTML Injection Prevention** - No innerHTML usage, textContent only
 - **API Key Security** - Secure API communication with rate limiting
 - **Validation Boundaries** - Strict input limits and type checking
+- **Debounced Validation** - Prevents excessive validation calls
 
 ## 🎨 Design Features
 

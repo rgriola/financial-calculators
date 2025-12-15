@@ -1,32 +1,21 @@
 /**
  * UI Manager for Financial Calculators
- * ------------------------------------
- * Handles all user interface updates, event bindings, validation, tooltips, tab switching,
- * keyboard shortcuts, and result display for the financial calculator web app.
- * All direct DOM manipulation and UI logic should be centralized here.
- *
- * Exposed Methods:
- * - showMessage(message, type)
- * - hideMessage()
- * - showMortgagePlaceholders()
- * - showRentPlaceholders()
- * - showCreditPlaceholders()
- * - updateInputValidation(input, isValid)
- * - displayMortgageResults(calculations, principal, interestRate, term)
- * - setupInfoTooltips()
- * - showInfoTooltip(infoType)
- * - hideInfoTooltip()
- * - setupKeyboardShortcuts()
- * - updateLoanTypeIndicator(loanTypeInfo)
- * - hideLoanTypeIndicator()
- * - populateStates(states)
- * - populateCounties(counties)
- * - setupCalculatorTabs()
+ * Handles all user interface updates, validation, tooltips, tab switching,
+ * keyboard shortcuts, and result display
+ * @module ui-manager
  */
 
-const UIManager = {
+import { AppConfig, ErrorHandler } from './config.js';
+import { SecurityUtils } from './security-utils.js';
+import { Utils } from './utils.js';
+
+/**
+ * Centralized UI management for all calculators
+ * @namespace UIManager
+ */
+export const UIManager = {
     /**
-     * Info content for tooltips.
+     * Info content for tooltips
      * @type {Object}
      */
     INFO_CONTENT: {
@@ -35,7 +24,7 @@ const UIManager = {
             content: "This is the total amount of money you'll pay in interest charges over the entire life of your loan. It's calculated by multiplying your monthly payment by the number of payments, then subtracting the original loan amount (principal)."
         },
         totalAmount: {
-            title: "Total Amount Paid", 
+            title: "Total Amount Paid",
             content: "This is the complete amount you'll pay back to the lender, including both the original loan amount (principal) plus all interest charges. This represents your total financial commitment for the mortgage."
         },
         interestRatio: {
@@ -53,31 +42,36 @@ const UIManager = {
     },
 
     /**
-     * Show a secure message to the user.
-     * @param {string} message - The message to display.
-     * @param {string} [type='info'] - Message type: 'info', 'success', 'error'.
+     * Show a secure message to the user
+     * @param {string} message - The message to display
+     * @param {string} [type='info'] - Message type: 'info', 'success', 'error'
      */
-    showMessage: function(message, type = 'info') {
+    showMessage: function (message, type = 'info') {
         const messageDiv = document.getElementById('message');
-        if (!messageDiv) return;
+        if (!messageDiv) {
+            AppConfig.log('warn', 'Message div not found');
+            return;
+        }
 
         const sanitizedMessage = SecurityUtils.sanitizeText(message);
         messageDiv.textContent = sanitizedMessage;
         messageDiv.className = `message ${type}`;
         messageDiv.classList.remove('hidden');
 
-        // Auto-hide info messages after 3 seconds
+        AppConfig.log('info', `Showing message: ${type}`, { message: sanitizedMessage });
+
+        // Auto-hide info messages after timeout
         if (type === 'info' || type === 'success') {
             setTimeout(() => {
                 this.hideMessage();
-            }, 3000);
+            }, AppConfig.ui.messageTimeout);
         }
     },
 
     /**
-     * Hide the message display.
+     * Hide the message display
      */
-    hideMessage: function() {
+    hideMessage: function () {
         const messageDiv = document.getElementById('message');
         if (messageDiv) {
             messageDiv.classList.add('hidden');
@@ -85,9 +79,9 @@ const UIManager = {
     },
 
     /**
-     * Show mortgage result placeholders in the UI.
+     * Show mortgage result placeholders in the UI
      */
-    showMortgagePlaceholders: function() {
+    showMortgagePlaceholders: function () {
         const resultDiv = document.getElementById('result');
         if (resultDiv) {
             resultDiv.classList.remove('hidden');
@@ -115,20 +109,20 @@ const UIManager = {
     },
 
     /**
-     * Show rent result placeholders in the UI.
+     * Show rent result placeholders in the UI
      */
-    showRentPlaceholders: function() {
+    showRentPlaceholders: function () {
         const placeholders = {
             // 15-year placeholders
             'rate15Display': '--.--% rate',
             'principal15yr': '$---,---',
             'totalInterest15yr': '$---,---',
-            
+
             // 30-year placeholders
             'rate30Display': '--.--% rate',
             'principal30yr': '$---,---',
             'totalInterest30yr': '$---,---',
-            
+
             // 50-year placeholders
             'rate50Display': '--.--% rate*',
             'principal50yr': '$---,---',
@@ -139,9 +133,8 @@ const UIManager = {
             const element = document.getElementById(id);
             if (element) {
                 // Only set placeholder if element doesn't already have calculated values
-                // This prevents overwriting live rates that were already loaded
-                if (!element.classList.contains('calculated') && 
-                    !element.classList.contains('live-rate') && 
+                if (!element.classList.contains('calculated') &&
+                    !element.classList.contains('live-rate') &&
                     !element.classList.contains('estimated')) {
                     element.textContent = placeholders[id];
                     element.classList.add('placeholder');
@@ -151,9 +144,9 @@ const UIManager = {
     },
 
     /**
-     * Show credit card result placeholders in the UI.
+     * Show credit card result placeholders in the UI
      */
-    showCreditPlaceholders: function() {
+    showCreditPlaceholders: function () {
         const placeholders = {
             'initialBalance': '$---,---',
             'payoffTime': '-- months',
@@ -172,11 +165,11 @@ const UIManager = {
     },
 
     /**
-     * Update input validation styling for a given input.
-     * @param {HTMLElement} input - The input element.
-     * @param {boolean} isValid - Whether the input is valid.
+     * Update input validation styling for a given input
+     * @param {HTMLElement} input - The input element
+     * @param {boolean} isValid - Whether the input is valid
      */
-    updateInputValidation: function(input, isValid) {
+    updateInputValidation: function (input, isValid) {
         if (!input) return;
 
         const value = input.value.trim();
@@ -193,13 +186,42 @@ const UIManager = {
     },
 
     /**
-     * Display mortgage calculation results in the UI.
-     * @param {Object} calculations - Calculation results.
-     * @param {number} principal - Principal amount.
-     * @param {number} interestRate - Interest rate.
-     * @param {number} term - Loan term in years.
+     * Show loading state on calculate button
+     * @param {string} buttonId - ID of the button element
      */
-    displayMortgageResults: function(calculations, principal, interestRate, term) {
+    showCalculating: function (buttonId = 'calculateButton') {
+        const btn = document.getElementById(buttonId);
+        if (btn) {
+            btn.disabled = true;
+            btn.dataset.originalText = btn.textContent;
+            btn.textContent = 'Calculating...';
+            btn.classList.add('loading');
+            AppConfig.log('debug', `Showing loading state on ${buttonId}`);
+        }
+    },
+
+    /**
+     * Hide loading state on calculate button
+     * @param {string} buttonId - ID of the button element
+     */
+    hideCalculating: function (buttonId = 'calculateButton') {
+        const btn = document.getElementById(buttonId);
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = btn.dataset.originalText || 'Calculate Payment';
+            btn.classList.remove('loading');
+            AppConfig.log('debug', `Hiding loading state on ${buttonId}`);
+        }
+    },
+
+    /**
+     * Display mortgage calculation results in the UI
+     * @param {Object} calculations - Calculation results
+     * @param {number} principal - Principal amount
+     * @param {number} interestRate - Interest rate
+     * @param {number} term - Loan term in years
+     */
+    displayMortgageResults: function (calculations, principal, interestRate, term) {
         const resultDiv = document.getElementById('result');
         const paymentSpan = document.getElementById('monthlyPayment');
         const principalDisplay = document.getElementById('principalDisplay');
@@ -217,12 +239,12 @@ const UIManager = {
 
         // Update values and remove placeholder classes
         const updates = [
-            { element: paymentSpan, value: SecurityUtils.formatCurrency(calculations.monthlyPayment) },
-            { element: principalDisplay, value: '$' + SecurityUtils.formatCurrency(principal) },
+            { element: paymentSpan, value: Utils.formatCurrency(calculations.monthlyPayment) },
+            { element: principalDisplay, value: '$' + Utils.formatCurrency(principal) },
             { element: interestDisplay, value: interestRate.toFixed(2) + '%' },
             { element: termDisplay, value: term + ' years' },
-            { element: totalInterestSpan, value: '$' + SecurityUtils.formatCurrency(calculations.totalInterest) },
-            { element: totalAmountSpan, value: '$' + SecurityUtils.formatCurrency(calculations.totalAmount) },
+            { element: totalInterestSpan, value: '$' + Utils.formatCurrency(calculations.totalInterest) },
+            { element: totalAmountSpan, value: '$' + Utils.formatCurrency(calculations.totalAmount) },
             { element: interestRatioSpan, value: calculations.interestRatio.toFixed(1) + '%' },
             { element: totalPaymentsSpan, value: calculations.numberOfPayments.toLocaleString() }
         ];
@@ -237,13 +259,33 @@ const UIManager = {
 
         resultDiv.classList.remove('hidden');
         resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        // Announce to screen readers
+        this.announceToScreenReader(`Calculation completed. Monthly payment is $${Utils.formatCurrency(calculations.monthlyPayment)}`);
+
         this.showMessage('Calculation completed successfully!', 'success');
     },
 
     /**
-     * Setup info tooltips for info icons.
+     * Announce message to screen readers
+     * @param {string} message - Message to announce
      */
-    setupInfoTooltips: function() {
+    announceToScreenReader: function (message) {
+        const announcement = document.createElement('div');
+        announcement.setAttribute('role', 'status');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.className = 'sr-only';
+        announcement.textContent = message;
+        document.body.appendChild(announcement);
+
+        // Remove after announcement
+        setTimeout(() => announcement.remove(), 1000);
+    },
+
+    /**
+     * Setup info tooltips for info icons
+     */
+    setupInfoTooltips: function () {
         const infoIcons = document.querySelectorAll('.info-icon');
         infoIcons.forEach(icon => {
             icon.addEventListener('click', (e) => {
@@ -266,7 +308,7 @@ const UIManager = {
             const tooltip = document.getElementById('infoTooltip');
             const isClickInsideTooltip = tooltip && tooltip.contains(e.target);
             const isInfoIcon = e.target.closest('.info-icon');
-            
+
             if (!isClickInsideTooltip && !isInfoIcon && tooltip && !tooltip.classList.contains('hidden')) {
                 this.hideInfoTooltip();
             }
@@ -281,32 +323,32 @@ const UIManager = {
     },
 
     /**
-     * Show an info tooltip for a given info type.
-     * @param {string} infoType - The info type key.
+     * Show an info tooltip for a given info type
+     * @param {string} infoType - The info type key
      */
-    showInfoTooltip: function(infoType) {
+    showInfoTooltip: function (infoType) {
         const tooltip = document.getElementById('infoTooltip');
         const tooltipText = document.getElementById('tooltipText');
-        
+
         if (!tooltip || !tooltipText) return;
 
         const infoData = this.INFO_CONTENT[infoType];
-        if (!infoData) return;
+        if (!infoData) {
+            AppConfig.log('warn', `Unknown info type: ${infoType}`);
+            return;
+        }
 
         // Create safe HTML content
         tooltipText.innerHTML = '';
-        
-        const titleElement = document.createElement('h4');
-        titleElement.textContent = SecurityUtils.sanitizeText(infoData.title);
-        
-        const contentElement = document.createElement('p');
-        contentElement.textContent = SecurityUtils.sanitizeText(infoData.content);
-        
+
+        const titleElement = Utils.createElement('h4', '', SecurityUtils.sanitizeText(infoData.title));
+        const contentElement = Utils.createElement('p', '', SecurityUtils.sanitizeText(infoData.content));
+
         tooltipText.appendChild(titleElement);
         tooltipText.appendChild(contentElement);
 
         tooltip.classList.remove('hidden');
-        
+
         const closeButton = tooltip.querySelector('.tooltip-close');
         if (closeButton) {
             setTimeout(() => closeButton.focus(), 100);
@@ -314,9 +356,9 @@ const UIManager = {
     },
 
     /**
-     * Hide the info tooltip.
+     * Hide the info tooltip
      */
-    hideInfoTooltip: function() {
+    hideInfoTooltip: function () {
         const tooltip = document.getElementById('infoTooltip');
         if (tooltip) {
             tooltip.classList.add('hidden');
@@ -324,9 +366,9 @@ const UIManager = {
     },
 
     /**
-     * Setup keyboard shortcuts for calculator actions.
+     * Setup keyboard shortcuts for calculator actions
      */
-    setupKeyboardShortcuts: function() {
+    setupKeyboardShortcuts: function () {
         document.addEventListener('keydown', (e) => {
             // Ctrl/Cmd + Enter to calculate
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -334,14 +376,14 @@ const UIManager = {
                 document.getElementById('calculateButton')?.click();
                 AppConfig.log('debug', 'Keyboard shortcut: Calculate');
             }
-            
+
             // Ctrl/Cmd + R to reset (prevent page reload)
             if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
                 e.preventDefault();
                 document.getElementById('resetButton')?.click();
                 AppConfig.log('debug', 'Keyboard shortcut: Reset');
             }
-            
+
             // Escape to close tooltips
             if (e.key === 'Escape') {
                 this.hideInfoTooltip();
@@ -350,10 +392,10 @@ const UIManager = {
     },
 
     /**
-     * Update the loan type indicator display.
-     * @param {Object} loanTypeInfo - Info about the loan type.
+     * Update the loan type indicator display
+     * @param {Object} loanTypeInfo - Info about the loan type
      */
-    updateLoanTypeIndicator: function(loanTypeInfo) {
+    updateLoanTypeIndicator: function (loanTypeInfo) {
         const indicator = document.getElementById('loanTypeIndicator');
         const badge = document.getElementById('loanTypeBadge');
         const limitDisplay = document.getElementById('countyLimitDisplay');
@@ -369,24 +411,24 @@ const UIManager = {
         badge.className = `badge ${loanTypeInfo.isConforming ? 'conforming' : 'jumbo'}`;
 
         // Update limit display
-        limitDisplay.textContent = '$' + SecurityUtils.formatCurrency(loanTypeInfo.limit);
+        limitDisplay.textContent = '$' + Utils.formatCurrency(loanTypeInfo.limit);
 
         // Update status message
         if (loanTypeInfo.isConforming) {
             const remaining = loanTypeInfo.limit - loanTypeInfo.principal;
-            statusMessage.textContent = `✓ ${SecurityUtils.formatCurrency(remaining)} below limit`;
+            statusMessage.textContent = `✓ ${Utils.formatCurrency(remaining)} below limit`;
             statusMessage.className = 'status-message conforming';
         } else {
             const excess = Math.abs(loanTypeInfo.difference);
-            statusMessage.textContent = `⚠ ${SecurityUtils.formatCurrency(excess)} above limit`;
+            statusMessage.textContent = `⚠ ${Utils.formatCurrency(excess)} above limit`;
             statusMessage.className = 'status-message jumbo';
         }
     },
 
     /**
-     * Hide the loan type indicator.
+     * Hide the loan type indicator
      */
-    hideLoanTypeIndicator: function() {
+    hideLoanTypeIndicator: function () {
         const indicator = document.getElementById('loanTypeIndicator');
         if (indicator) {
             indicator.classList.add('hidden');
@@ -394,10 +436,10 @@ const UIManager = {
     },
 
     /**
-     * Populate the state dropdown with available states.
-     * @param {Array<string>} states - List of state names.
+     * Populate the state dropdown with available states
+     * @param {Array<string>} states - List of state names
      */
-    populateStates: function(states) {
+    populateStates: function (states) {
         const stateSelect = document.getElementById('propertyState');
         if (!stateSelect) return;
 
@@ -414,10 +456,10 @@ const UIManager = {
     },
 
     /**
-     * Populate the county dropdown with available counties.
-     * @param {Array<string>} counties - List of county names.
+     * Populate the county dropdown with available counties
+     * @param {Array<string>} counties - List of county names
      */
-    populateCounties: function(counties) {
+    populateCounties: function (counties) {
         const countySelect = document.getElementById('propertyCounty');
         if (!countySelect) return;
 
@@ -425,7 +467,7 @@ const UIManager = {
         countySelect.innerHTML = '<option value="">Select County...</option>';
 
         if (counties.length === 0) {
-            countySelect.innerHTML = '<option value=""> available</option>';
+            countySelect.innerHTML = '<option value="">No counties available</option>';
             countySelect.disabled = true;
             return;
         }
@@ -442,11 +484,10 @@ const UIManager = {
     },
 
     /**
-     * Setup tab switching logic for calculator panels.
-     * Handles tab navigation and panel visibility.
-     * Only toggles .hidden on individual tab panels, not the parent container.
+     * Setup tab switching logic for calculator panels
+     * Handles tab navigation and panel visibility
      */
-    setupCalculatorTabs: function() {
+    setupCalculatorTabs: function () {
         const tabMortgage = document.getElementById('tab-mortgage');
         const tabRent = document.getElementById('tab-rent');
         const tabCredit = document.getElementById('tab-credit');
@@ -454,41 +495,35 @@ const UIManager = {
         const panelRent = document.getElementById('panel-rent');
         const panelCredit = document.getElementById('panel-credit');
 
-        function showPanel(panelToShow, tabToActivate) {
-            // Hide all panels
-            panelMortgage.classList.add('hidden');
-            panelRent.classList.add('hidden');
-            panelCredit.classList.add('hidden');
-            
-            // Deactivate all tabs
-            tabMortgage.classList.remove('active');
-            tabMortgage.setAttribute('aria-selected', 'false');
-            tabRent.classList.remove('active');
-            tabRent.setAttribute('aria-selected', 'false');
-            tabCredit.classList.remove('active');
-            tabCredit.setAttribute('aria-selected', 'false');
-            
-            // Show selected panel and activate tab
-            panelToShow.classList.remove('hidden');
-            tabToActivate.classList.add('active');
-            tabToActivate.setAttribute('aria-selected', 'true');
+        if (!tabMortgage || !tabRent || !tabCredit) {
+            AppConfig.log('warn', 'Calculator tabs not found');
+            return;
         }
 
-        tabMortgage.addEventListener('click', function() {
-            showPanel(panelMortgage, tabMortgage);
-        });
+        function showPanel(panelToShow, tabToActivate) {
+            // Hide all panels
+            panelMortgage?.classList.add('hidden');
+            panelRent?.classList.add('hidden');
+            panelCredit?.classList.add('hidden');
 
-        tabRent.addEventListener('click', function() {
-            showPanel(panelRent, tabRent);
-        });
+            // Deactivate all tabs
+            [tabMortgage, tabRent, tabCredit].forEach(tab => {
+                tab.classList.remove('active');
+                tab.setAttribute('aria-selected', 'false');
+            });
 
-        tabCredit.addEventListener('click', function() {
-            showPanel(panelCredit, tabCredit);
-        });
+            // Show selected panel and activate tab
+            panelToShow?.classList.remove('hidden');
+            tabToActivate.classList.add('active');
+            tabToActivate.setAttribute('aria-selected', 'true');
+
+            AppConfig.log('debug', 'Switched to tab', { tab: tabToActivate.id });
+        }
+
+        tabMortgage.addEventListener('click', () => showPanel(panelMortgage, tabMortgage));
+        tabRent.addEventListener('click', () => showPanel(panelRent, tabRent));
+        tabCredit.addEventListener('click', () => showPanel(panelCredit, tabCredit));
     }
 };
 
-// Export for module use
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = UIManager;
-}
+export default UIManager;

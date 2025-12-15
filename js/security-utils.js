@@ -1,63 +1,208 @@
-// Security utilities for financial calculator
-// CSP compliant security functions
+/**
+ * Security Utilities Module
+ * Security-focused functions for input validation and sanitization
+ * @module security-utils
+ */
 
-const SecurityUtils = {
-    sanitizeInput: function(input) {
+/**
+ * Security utilities for protecting against XSS and injection attacks
+ * @namespace SecurityUtils
+ */
+export const SecurityUtils = {
+    /**
+     * Sanitize numeric input - removes all non-numeric characters except decimal
+     * @param {string|number} input - Input value to sanitize
+     * @returns {string} Sanitized numeric string
+     * @example
+     * SecurityUtils.sanitizeInput("$1,234.56") // "1234.56"
+     */
+    sanitizeInput: function (input) {
         if (!input || typeof input !== 'string') return '';
-        // Remove commas before processing numeric input
-        return input.toString().trim().replace(/,/g, '');
+
+        // Remove all non-numeric characters except decimal point
+        const cleaned = input.toString()
+            .trim()
+            .replace(/,/g, '')
+            .replace(/[^\d.]/g, '');
+
+        // Prevent multiple decimal points
+        const parts = cleaned.split('.');
+        if (parts.length > 2) {
+            // Keep only first decimal point
+            return parts[0] + '.' + parts.slice(1).join('');
+        }
+
+        return cleaned;
     },
 
-    sanitizeText: function(text) {
+    /**
+     * Sanitize text input - removes potentially dangerous characters
+     * @param {string} text - Text to sanitize
+     * @returns {string} Sanitized text
+     * @example
+     * SecurityUtils.sanitizeText("<script>alert('xss')</script>") // "scriptalert('xss')/script"
+     */
+    sanitizeText: function (text) {
         if (!text || typeof text !== 'string') return '';
-        return text.trim().replace(/[<>]/g, '');
+
+        // Remove HTML tags and potentially dangerous characters
+        return text
+            .trim()
+            .replace(/[<>]/g, '')
+            .replace(/javascript:/gi, '')
+            .replace(/on\w+=/gi, ''); // Remove event handlers
     },
 
-    validateNumericInput: function(value, min, max) {
+    /**
+     * Validate numeric input is within acceptable range
+     * @param {string|number} value - Value to validate
+     * @param {number} min - Minimum acceptable value
+     * @param {number} max - Maximum acceptable value
+     * @returns {boolean} True if valid
+     * @example
+     * SecurityUtils.validateNumericInput("100", 0, 1000) // true
+     * SecurityUtils.validateNumericInput("2000", 0, 1000) // false
+     */
+    validateNumericInput: function (value, min, max) {
         const num = parseFloat(value);
         if (isNaN(num) || num < min || num > max) return false;
         return true;
     },
 
-    formatCurrency: function(amount) {
-        if (isNaN(amount)) return '0.00';
-        return parseFloat(amount).toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    },
+    /**
+     * Check for HTML injection attempts in input
+     * @param {string} input - Input string to check
+     * @returns {boolean} True if HTML/script tags detected
+     * @example
+     * SecurityUtils.detectHTMLInjection("<script>alert(1)</script>") // true
+     * SecurityUtils.detectHTMLInjection("Hello World") // false
+     */
+    detectHTMLInjection: function (input) {
+        if (!input) return false;
 
-    // Format number input with commas (for live input formatting)
-    formatNumberWithCommas: function(value) {
-        if (!value) return '';
-        // Remove any non-digit characters except decimal point
-        const cleaned = value.toString().replace(/[^\d.]/g, '');
-        
-        // Prevent multiple decimal points
-        const parts = cleaned.split('.');
-        if (parts.length > 2) {
-            // Keep only the first decimal point
-            parts[0] = parts[0] + parts.slice(1, -1).join('');
-            parts.splice(1, parts.length - 2);
-        }
-        
-        // Format integer part with commas
-        if (parts[0]) {
-            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        }
-        
-        // Return formatted number (limit to 2 decimal places if present)
-        return parts.length > 1 ? parts[0] + '.' + parts[1].slice(0, 2) : parts[0];
-    },
-
-    // Check for HTML injection attempts
-    detectHTMLInjection: function(input) {
         const htmlPattern = /<[^>]*>/g;
-        return htmlPattern.test(input);
-    }
+        const scriptPattern = /<script|javascript:|on\w+=/gi;
+
+        return htmlPattern.test(input) || scriptPattern.test(input);
+    },
+
+    /**
+     * Check for SQL injection patterns (for future backend integration)
+     * @param {string} input - Input string to check
+     * @returns {boolean} True if SQL injection patterns detected
+     */
+    detectSQLInjection: function (input) {
+        if (!input) return false;
+
+        const sqlPatterns = [
+            /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE)\b)/gi,
+            /(--|\#|\/\*|\*\/)/g,
+            /(\bOR\b.*=.*)/gi,
+            /(\bAND\b.*=.*)/gi
+        ];
+
+        return sqlPatterns.some(pattern => pattern.test(input));
+    },
+
+    /**
+     * Escape HTML special characters
+     * @param {string} text - Text to escape
+     * @returns {string} Escaped text safe for HTML insertion
+     * @example
+     * SecurityUtils.escapeHTML("<div>Test</div>") // "&lt;div&gt;Test&lt;/div&gt;"
+     */
+    escapeHTML: function (text) {
+        if (!text) return '';
+
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '/': '&#x2F;'
+        };
+
+        return text.replace(/[&<>"'/]/g, char => map[char]);
+    },
+
+    /**
+     * Validate email format (basic validation)
+     * @param {string} email - Email address to validate
+     * @returns {boolean} True if valid email format
+     */
+    validateEmail: function (email) {
+        if (!email) return false;
+
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailPattern.test(email);
+    },
+
+    /**
+     * Generate secure random string (for tokens, IDs, etc.)
+     * @param {number} length - Length of string to generate
+     * @returns {string} Random string
+     */
+    generateRandomString: function (length = 16) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+
+        // Use crypto.getRandomValues if available for better randomness
+        if (window.crypto && window.crypto.getRandomValues) {
+            const randomValues = new Uint8Array(length);
+            window.crypto.getRandomValues(randomValues);
+
+            for (let i = 0; i < length; i++) {
+                result += chars[randomValues[i] % chars.length];
+            }
+        } else {
+            // Fallback to Math.random
+            for (let i = 0; i < length; i++) {
+                result += chars[Math.floor(Math.random() * chars.length)];
+            }
+        }
+
+        return result;
+    },
+
+    /**
+     * Rate limiting helper - tracks function calls and enforces limits
+     * @param {string} key - Unique identifier for this rate limit
+     * @param {number} maxCalls - Maximum calls allowed
+     * @param {number} timeWindow - Time window in milliseconds
+     * @returns {boolean} True if call is allowed
+     * @example
+     * if (SecurityUtils.rateLimit('apiCall', 10, 60000)) {
+     *     // Make API call
+     * }
+     */
+    rateLimit: (function () {
+        const limits = new Map();
+
+        return function (key, maxCalls, timeWindow) {
+            const now = Date.now();
+
+            if (!limits.has(key)) {
+                limits.set(key, { count: 1, resetTime: now + timeWindow });
+                return true;
+            }
+
+            const limit = limits.get(key);
+
+            if (now >= limit.resetTime) {
+                // Reset window
+                limits.set(key, { count: 1, resetTime: now + timeWindow });
+                return true;
+            }
+
+            if (limit.count >= maxCalls) {
+                return false; // Rate limit exceeded
+            }
+
+            limit.count++;
+            return true;
+        };
+    })()
 };
 
-// Export for module use
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = SecurityUtils;
-}
+export default SecurityUtils;

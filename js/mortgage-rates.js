@@ -1,7 +1,16 @@
-// Mortgage Rate API Service - Secure Implementation
-// Following security.md guidelines for CSP compliance
+/**
+ * Mortgage Rate API Service
+ * Fetches live mortgage rates from API Ninjas with caching and retry logic
+ * @module mortgage-rates
+ */
 
-const MortgageRateService = {
+import { AppConfig } from './config.js';
+
+/**
+ * Mortgage rate service for fetching and displaying live rates
+ * @namespace MortgageRateService
+ */
+export const MortgageRateService = {
     // Configuration
     CONFIG: {
         API: {
@@ -19,49 +28,49 @@ const MortgageRateService = {
 
     // Cache management
     Cache: {
-        set: function(data) {
+        set: function (data) {
             try {
                 const cacheData = {
                     data: data,
                     timestamp: Date.now()
                 };
                 localStorage.setItem(MortgageRateService.CONFIG.CACHE.KEY, JSON.stringify(cacheData));
-                console.log('Mortgage rates cached successfully');
+                AppConfig.log('info', 'Mortgage rates cached successfully');
             } catch (error) {
-                console.warn('Failed to cache mortgage rates:', error);
+                AppConfig.log('warn', 'Failed to cache mortgage rates', error);
             }
         },
 
-        get: function() {
+        get: function () {
             try {
                 const cached = localStorage.getItem(MortgageRateService.CONFIG.CACHE.KEY);
                 if (!cached) return null;
 
                 const cacheData = JSON.parse(cached);
                 const isExpired = (Date.now() - cacheData.timestamp) > MortgageRateService.CONFIG.CACHE.DURATION;
-                
+
                 if (isExpired) {
                     localStorage.removeItem(MortgageRateService.CONFIG.CACHE.KEY);
                     return null;
                 }
 
-                console.log('Using cached mortgage rates');
+                AppConfig.log('info', 'Using cached mortgage rates');
                 return cacheData.data;
             } catch (error) {
-                console.warn('Failed to retrieve cached mortgage rates:', error);
+                AppConfig.log('warn', 'Failed to retrieve cached mortgage rates', error);
                 localStorage.removeItem(MortgageRateService.CONFIG.CACHE.KEY);
                 return null;
             }
         },
 
-        clear: function() {
+        clear: function () {
             localStorage.removeItem(MortgageRateService.CONFIG.CACHE.KEY);
         }
     },
 
     // Security utilities
     SecurityUtils: {
-        sanitizeRateData: function(data) {
+        sanitizeRateData: function (data) {
             if (!data || typeof data !== 'object') return null;
 
             // Validate and sanitize the response structure
@@ -85,26 +94,26 @@ const MortgageRateService = {
             return sanitized;
         },
 
-        sanitizeString: function(str) {
+        sanitizeString: function (str) {
             if (!str || typeof str !== 'string') return '';
             return str.trim().replace(/[<>]/g, '');
         },
 
-        sanitizeRate: function(rate) {
+        sanitizeRate: function (rate) {
             if (!rate) return null;
             const numRate = parseFloat(rate);
             if (isNaN(numRate) || numRate < 0 || numRate > 50) return null;
             return numRate.toFixed(2);
         },
 
-        formatDate: function(dateStr) {
+        formatDate: function (dateStr) {
             if (!dateStr) return 'Unknown';
             try {
                 const date = new Date(dateStr);
-                return date.toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
                 });
             } catch (error) {
                 return dateStr;
@@ -112,17 +121,20 @@ const MortgageRateService = {
         }
     },
 
-    // Fetch mortgage rates with retry logic
-    fetchRates: async function() {
+    /**
+     * Fetch mortgage rates with retry logic
+     * @returns {Promise<Object|null>} Rate data or null on failure
+     */
+    fetchRates: async function () {
         AppConfig.performance.start('fetchMortgageRates');
         AppConfig.log('info', 'Fetching mortgage rates...');
-
-        console.log('Fetching mortgage rates...');
 
         // Check cache first
         const cachedData = this.Cache.get();
         if (cachedData) {
             this.displayRates(cachedData);
+            // Dispatch event for listeners
+            document.dispatchEvent(new CustomEvent('ratesUpdated', { detail: cachedData }));
             return cachedData;
         }
 
@@ -130,11 +142,11 @@ const MortgageRateService = {
         this.showLoadingState();
 
         let lastError = null;
-        
+
         for (let attempt = 1; attempt <= this.CONFIG.API.RETRY_ATTEMPTS; attempt++) {
             try {
-                console.log(`Attempting to fetch rates (attempt ${attempt}/${this.CONFIG.API.RETRY_ATTEMPTS})`);
-                
+                AppConfig.log('debug', `Attempting to fetch rates (${attempt}/${this.CONFIG.API.RETRY_ATTEMPTS})`);
+
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), this.CONFIG.API.TIMEOUT);
 
@@ -154,7 +166,7 @@ const MortgageRateService = {
                 }
 
                 const rawData = await response.json();
-                console.log('Raw API response:', rawData);
+                AppConfig.log('debug', 'Raw API response received');
 
                 const sanitizedData = this.SecurityUtils.sanitizeRateData(rawData);
                 if (!sanitizedData) {
@@ -163,37 +175,43 @@ const MortgageRateService = {
 
                 // Cache the successful response
                 this.Cache.set(sanitizedData);
-                
+
                 // Display the rates
                 this.displayRates(sanitizedData);
                 this.hideLoadingState();
-                
+
+                // Dispatch event for listeners
+                document.dispatchEvent(new CustomEvent('ratesUpdated', { detail: sanitizedData }));
+
                 AppConfig.performance.end('fetchMortgageRates');
-                AppConfig.log('info', 'Mortgage rates fetched successfully', sanitizedData);
+                AppConfig.log('info', 'Mortgage rates fetched successfully');
                 return sanitizedData;
 
             } catch (error) {
                 lastError = error;
-                console.warn(`Attempt ${attempt} failed:`, error.message);
+                AppConfig.log('warn', `Attempt ${attempt} failed`, { error: error.message });
 
                 if (attempt < this.CONFIG.API.RETRY_ATTEMPTS) {
-                    console.log(`Retrying in ${this.CONFIG.API.RETRY_DELAY}ms...`);
+                    AppConfig.log('debug', `Retrying in ${this.CONFIG.API.RETRY_DELAY}ms...`);
                     await this.delay(this.CONFIG.API.RETRY_DELAY);
                 }
             }
         }
 
         // All attempts failed
-        console.error('Failed to fetch mortgage rates after all attempts:', lastError);
+        AppConfig.log('error', 'Failed to fetch mortgage rates after all attempts', lastError);
         this.showErrorState(lastError.message);
         return null;
     },
 
-    // Display rates in the UI
-    displayRates: function(rateData) {
+    /**
+     * Display rates in the UI
+     * @param {Object} rateData - Sanitized rate data
+     */
+    displayRates: function (rateData) {
         const ratesContainer = document.getElementById('mortgage-rates');
         if (!ratesContainer) {
-            console.warn('Mortgage rates container not found');
+            AppConfig.log('warn', 'Mortgage rates container not found');
             return;
         }
 
@@ -208,7 +226,7 @@ const MortgageRateService = {
         if (frm30Element) {
             frm30Element.textContent = rateData.data.frm_30 + '%';
         }
-        
+
         if (frm15Element) {
             frm15Element.textContent = rateData.data.frm_15 + '%';
         }
@@ -219,12 +237,14 @@ const MortgageRateService = {
 
         // Show the rates container
         ratesContainer.classList.remove('hidden');
-        
-        console.log('Mortgage rates displayed successfully');
+
+        AppConfig.log('info', 'Mortgage rates displayed successfully');
     },
 
-    // Show loading state
-    showLoadingState: function() {
+    /**
+     * Show loading state
+     */
+    showLoadingState: function () {
         const ratesContainer = document.getElementById('mortgage-rates');
         if (ratesContainer) {
             ratesContainer.classList.add('loading');
@@ -241,8 +261,11 @@ const MortgageRateService = {
         if (weekElement) weekElement.textContent = 'Loading...';
     },
 
-    // Show error state
-    showErrorState: function(errorMessage) {
+    /**
+     * Show error state
+     * @param {string} errorMessage - Error message to display
+     */
+    showErrorState: function (errorMessage) {
         const ratesContainer = document.getElementById('mortgage-rates');
         if (ratesContainer) {
             ratesContainer.classList.add('error');
@@ -258,33 +281,44 @@ const MortgageRateService = {
         if (frm15Element) frm15Element.textContent = 'N/A';
         if (weekElement) weekElement.textContent = 'Failed to load';
 
-        console.error('Error displaying mortgage rates:', errorMessage);
+        AppConfig.log('error', 'Error displaying mortgage rates', { error: errorMessage });
     },
 
-    // Hide loading state
-    hideLoadingState: function() {
+    /**
+     * Hide loading state
+     */
+    hideLoadingState: function () {
         const ratesContainer = document.getElementById('mortgage-rates');
         if (ratesContainer) {
             ratesContainer.classList.remove('loading');
         }
     },
 
-    // Utility delay function
-    delay: function(ms) {
+    /**
+     * Utility delay function
+     * @param {number} ms - Milliseconds to delay
+     * @returns {Promise} Promise that resolves after delay
+     */
+    delay: function (ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     },
 
-    // Refresh rates manually
-    refreshRates: function() {
-        console.log('Manually refreshing mortgage rates...');
+    /**
+     * Refresh rates manually
+     * @returns {Promise} Promise resolving to rate data
+     */
+    refreshRates: function () {
+        AppConfig.log('info', 'Manually refreshing mortgage rates...');
         this.Cache.clear();
         return this.fetchRates();
     },
 
-    // Initialize the rate service
-    init: function() {
-        console.log('Initializing Mortgage Rate Service...');
-        
+    /**
+     * Initialize the rate service
+     */
+    init: function () {
+        AppConfig.log('info', 'Initializing Mortgage Rate Service...');
+
         // Setup refresh button if it exists
         const refreshButton = document.getElementById('refresh-rates');
         if (refreshButton) {
@@ -299,7 +333,4 @@ const MortgageRateService = {
     }
 };
 
-// Export for use in other files if needed
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = MortgageRateService;
-}
+export default MortgageRateService;
