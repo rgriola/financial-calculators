@@ -37,6 +37,7 @@ export const CreditCardCalculator = {
             totalInterest: document.getElementById('totalCreditInterest'),
             totalAmount: document.getElementById('totalCreditAmount'),
             monthlyRate: document.getElementById('monthlyInterestRate'),
+            estimatedMinPayment: document.getElementById('estimatedMinPayment'),
             // Payment breakdown elements
             paymentBreakdown: document.getElementById('paymentBreakdown'),
             principalBar: document.getElementById('principalBar'),
@@ -189,13 +190,15 @@ export const CreditCardCalculator = {
         // Calculate monthly interest rate
         const monthlyInterestRate = apr / 12 / 100;
 
-        // Calculate minimum payment needed to pay off debt
-        const minimumPayment = balance * monthlyInterestRate;
+        // Interest-only floor: the payment must exceed this or the balance
+        // never shrinks (negative amortization). This is NOT a realistic
+        // card-issuer minimum payment - see estimateCardMinimumPayment().
+        const interestOnlyFloor = balance * monthlyInterestRate;
 
-        if (monthlyPayment <= minimumPayment) {
+        if (monthlyPayment <= interestOnlyFloor) {
             return ErrorHandler.handleError(
                 'Monthly payment too low',
-                `Monthly payment ($${monthlyPayment.toFixed(2)}) must be greater than the monthly interest ($${minimumPayment.toFixed(2)}) to pay off the balance`
+                `Monthly payment ($${monthlyPayment.toFixed(2)}) must be greater than the monthly interest ($${interestOnlyFloor.toFixed(2)}) to pay off the balance`
             );
         }
 
@@ -204,8 +207,11 @@ export const CreditCardCalculator = {
 
         AppConfig.log('info', 'Calculation result', result);
 
+        // Estimate a realistic card-issuer minimum payment for display
+        const estimatedMinPayment = this.estimateCardMinimumPayment(balance, monthlyInterestRate);
+
         // Display results
-        this.displayResults(result, monthlyInterestRate * 100, balance, monthlyPayment, apr);
+        this.displayResults(result, monthlyInterestRate * 100, balance, monthlyPayment, apr, estimatedMinPayment);
 
         // Show results section
         this.elements.resultDiv.style.display = 'block';
@@ -258,14 +264,31 @@ export const CreditCardCalculator = {
     },
 
     /**
+     * Estimate a realistic card-issuer minimum payment, matching the common
+     * industry formula used by most major issuers: the greater of
+     * (1% of balance + that month's interest) or a flat $25 floor. Actual
+     * issuer formulas vary (1-3% of balance, fees, etc.), so this is an
+     * estimate for informational display only.
+     * @param {number} balance - Current credit card balance
+     * @param {number} monthlyRate - Monthly interest rate (as decimal)
+     * @returns {number} Estimated minimum payment
+     */
+    estimateCardMinimumPayment: function (balance, monthlyRate) {
+        const flatFloor = 25;
+        const percentPlusInterest = (balance * 0.01) + (balance * monthlyRate);
+        return Math.max(percentPlusInterest, flatFloor);
+    },
+
+    /**
      * Display calculation results in the UI
      * @param {Object} result - Calculation results
      * @param {number} monthlyRatePercent - Monthly interest rate as percentage
      * @param {number} initialBalance - The original balance
      * @param {number} monthlyPayment - The fixed monthly payment
      * @param {number} apr - The annual percentage rate as entered by the user
+     * @param {number} estimatedMinPayment - Estimated realistic card-issuer minimum payment
      */
-    displayResults: function (result, monthlyRatePercent, initialBalance, monthlyPayment, apr) {
+    displayResults: function (result, monthlyRatePercent, initialBalance, monthlyPayment, apr, estimatedMinPayment) {
         // Format payoff time
         const years = Math.floor(result.months / 12);
         const remainingMonths = result.months % 12;
@@ -291,12 +314,14 @@ export const CreditCardCalculator = {
         this.elements.totalInterest.textContent = '$' + Utils.formatCurrency(result.totalInterest);
         this.elements.totalAmount.textContent = '$' + Utils.formatCurrency(result.totalPaid);
         this.elements.monthlyRate.textContent = `${monthlyRatePercent.toFixed(4)}% (${apr.toFixed(2)}% APR)`;
+        this.elements.estimatedMinPayment.textContent = '$' + Utils.formatCurrency(estimatedMinPayment);
 
         // Remove placeholder class
         this.elements.payoffTime.classList.remove('placeholder');
         this.elements.totalInterest.classList.remove('placeholder');
         this.elements.totalAmount.classList.remove('placeholder');
         this.elements.monthlyRate.classList.remove('placeholder');
+        this.elements.estimatedMinPayment.classList.remove('placeholder');
 
         // Calculate first month's payment breakdown
         const firstMonthInterest = initialBalance * (monthlyRatePercent / 100);
@@ -345,6 +370,7 @@ export const CreditCardCalculator = {
         this.elements.totalInterest.classList.add('placeholder');
         this.elements.totalAmount.classList.add('placeholder');
         this.elements.monthlyRate.classList.add('placeholder');
+        this.elements.estimatedMinPayment.classList.add('placeholder');
 
         // Reset display values
         this.elements.initialBalance.textContent = '$---,---';
@@ -352,6 +378,7 @@ export const CreditCardCalculator = {
         this.elements.totalInterest.textContent = '$---,---';
         this.elements.totalAmount.textContent = '$---,---';
         this.elements.monthlyRate.textContent = '--.--% ';
+        this.elements.estimatedMinPayment.textContent = '$---.--';
 
         // Hide and reset payment breakdown
         this.elements.paymentBreakdown.style.display = 'none';
