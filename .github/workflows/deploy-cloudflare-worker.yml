@@ -1,0 +1,31 @@
+name: Deploy Cloudflare Worker
+
+# Auto-deploys cloudflare-worker/mortgage-rates-proxy.js whenever it changes
+# on main. The FRED_API_KEY secret used by the worker at runtime lives in
+# Cloudflare (set once via `wrangler secret put FRED_API_KEY`) and is NOT
+# touched by this workflow - only the worker code/config is redeployed.
+#
+# Required repo secrets (Settings > Secrets and variables > Actions):
+#   CLOUDFLARE_API_TOKEN   - Cloudflare dashboard > My Profile > API Tokens
+#                            > Create Token > "Edit Cloudflare Workers" template
+#   CLOUDFLARE_ACCOUNT_ID  - Cloudflare dashboard > Workers & Pages (right sidebar)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare-worker/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: cloudflare-worker

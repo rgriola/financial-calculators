@@ -1,0 +1,33 @@
+name: CI Checks
+
+# Lightweight checks since this project has no build step or test suite:
+#   1. JS syntax validation - catches broken code before it reaches main
+#   2. Secret scanning (gitleaks) - catches accidentally committed API
+#      keys/credentials (relevant after a hardcoded API key was found and
+#      removed from js/mortgage-rates.js)
+
+on: [push, pull_request]
+
+jobs:
+  js-syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check JS syntax
+        run: find . -name "*.js" -not -path "./.git/*" -print0 | xargs -0 -n1 node --check
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
