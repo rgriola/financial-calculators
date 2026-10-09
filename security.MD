@@ -1,7 +1,7 @@
 # Security Implementation Guide 🛡️
 
 **Complete guide for implementing enterprise-grade security across all application pages**
-*Based on real-world implementation experience with test-registration.html*
+_Based on real-world implementation experience with test-registration.html_
 
 ---
 
@@ -24,6 +24,7 @@
 ## 🎯 Security Audit Compliance
 
 ### Current Security Standards
+
 Based on our comprehensive security audit, all pages must achieve:
 
 - ✅ **Zero inline event handlers** (`onclick`, `onsubmit`, etc.)
@@ -34,6 +35,7 @@ Based on our comprehensive security audit, all pages must achieve:
 - ✅ **CSRF protection** for all forms
 
 ### Target Security Grade: **A+**
+
 ```
 HIGH PRIORITY VULNERABILITIES:     0 ✅
 MEDIUM PRIORITY VULNERABILITIES:   0 ✅
@@ -46,45 +48,57 @@ SECURITY COMPLIANCE:               100% ✅
 ## 🔒 Content Security Policy (CSP) Implementation
 
 ### ⚠️ X-Frame-Options Meta Tag Issue
+
 **CRITICAL**: X-Frame-Options cannot be set via meta tag - only HTTP headers work!
 
 #### ❌ Invalid Implementation
+
 ```html
 <!-- THIS WILL NOT WORK AND CAUSES CONSOLE ERRORS -->
-<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="X-Frame-Options" content="DENY" />
 ```
 
 #### ✅ Correct Implementation
+
 ```html
 <!-- Remove X-Frame-Options from meta tags completely -->
 <!-- Configure at server level instead -->
 ```
 
 ### ❌ Insecure CSP (Before)
+
 ```html
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:;">
+<meta
+  http-equiv="Content-Security-Policy"
+  content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:;"
+/>
 ```
 
 ### ✅ Secure CSP (After - test-registration.html template)
+
 ```html
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
-<meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta http-equiv="X-XSS-Protection" content="1; mode=block">
-<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta
+  http-equiv="Content-Security-Policy"
+  content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
+/>
+<meta http-equiv="X-Content-Type-Options" content="nosniff" />
+<meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
 ```
 
 ### CSP Directive Breakdown
-| Directive | Value | Purpose |
-|-----------|--------|---------|
-| `default-src 'self'` | Only same-origin | Default policy for all resources |
-| `script-src 'self'` | Only same-origin scripts | Prevents XSS via script injection |
-| `style-src 'self'` | Only same-origin styles | Prevents CSS injection attacks |
-| `img-src 'self' data: https:` | Same-origin, data URIs, HTTPS | Allow legitimate images |
-| `connect-src 'self' https:` | Same-origin, HTTPS APIs | Control AJAX/fetch requests |
-| `font-src 'self'` | Only same-origin fonts | Prevent font-based attacks |
-| `object-src 'none'` | No plugins | Disable Flash, Java applets |
-| `base-uri 'self'` | Same-origin base tags | Prevent base tag hijacking |
-| `form-action 'self'` | Same-origin form submissions | Prevent form hijacking |
+
+| Directive                     | Value                         | Purpose                           |
+| ----------------------------- | ----------------------------- | --------------------------------- |
+| `default-src 'self'`          | Only same-origin              | Default policy for all resources  |
+| `script-src 'self'`           | Only same-origin scripts      | Prevents XSS via script injection |
+| `style-src 'self'`            | Only same-origin styles       | Prevents CSS injection attacks    |
+| `img-src 'self' data: https:` | Same-origin, data URIs, HTTPS | Allow legitimate images           |
+| `connect-src 'self' https:`   | Same-origin, HTTPS APIs       | Control AJAX/fetch requests       |
+| `font-src 'self'`             | Only same-origin fonts        | Prevent font-based attacks        |
+| `object-src 'none'`           | No plugins                    | Disable Flash, Java applets       |
+| `base-uri 'self'`             | Same-origin base tags         | Prevent base tag hijacking        |
+| `form-action 'self'`          | Same-origin form submissions  | Prevent form hijacking            |
 
 ---
 
@@ -93,101 +107,113 @@ SECURITY COMPLIANCE:               100% ✅
 ### Inline Style Violations in JavaScript
 
 #### ❌ Violation: JavaScript Setting Inline Styles
+
 **Error**: `Refused to apply inline style because it violates CSP directive 'style-src 'self''`
 
 ```javascript
 // THESE CAUSE CSP VIOLATIONS
-element.style.cssText = 'color: red; margin: 10px;';
-element.style.display = 'none';
-button.style.background = 'var(--accent-blue)';
+element.style.cssText = "color: red; margin: 10px;";
+element.style.display = "none";
+button.style.background = "var(--accent-blue)";
 
 // innerHTML with style attributes
 element.innerHTML = '<div style="color: red;">Text</div>';
 ```
 
 #### ✅ Solution: CSS Classes + JavaScript Class Management
+
 ```javascript
 // CSP COMPLIANT - Use CSS classes
-element.classList.add('error-state');
-element.classList.remove('hidden');
-button.className = 'btn-primary active';
+element.classList.add("error-state");
+element.classList.remove("hidden");
+button.className = "btn-primary active";
 
 // Safe DOM manipulation
-element.textContent = 'Safe text content';
+element.textContent = "Safe text content";
 ```
 
 ### Password Strength Indicator - Real Example
 
 #### ❌ Before (CSP Violation)
+
 ```javascript
 // From test-registration.js - CAUSED CSP ERRORS
-const checkElements = checks.map(check => {
-    const color = check.test ? '#10b981' : '#6b7280';
-    return `<div style="color: ${color}; margin: 2px 0;">${status} ${check.text}</div>`;
+const checkElements = checks.map((check) => {
+  const color = check.test ? "#10b981" : "#6b7280";
+  return `<div style="color: ${color}; margin: 2px 0;">${status} ${check.text}</div>`;
 });
 
 strengthDiv.innerHTML = `<div style="font-weight: 600; color: #374151;">Password Requirements:</div>`;
 ```
 
 #### ✅ After (CSP Compliant)
+
 ```javascript
 // Fixed implementation - NO CSP VIOLATIONS
-const checkElements = checks.map(check => {
-    const className = check.test ? 'met' : 'unmet';
-    return `<div class="password-requirement-item ${className}">${status} ${check.text}</div>`;
+const checkElements = checks.map((check) => {
+  const className = check.test ? "met" : "unmet";
+  return `<div class="password-requirement-item ${className}">${status} ${check.text}</div>`;
 });
 
 strengthDiv.innerHTML = `<div class="password-requirement-title">Password Requirements:</div>`;
 ```
 
 ### CSS Classes for Dynamic Styling
+
 ```css
 /* Password requirement styling - Added to test-registration.css */
 .password-requirement-title {
-    font-weight: 600;
-    margin-bottom: 4px;
-    color: #374151;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #374151;
 }
 
 .password-requirement-item {
-    margin: 2px 0;
+  margin: 2px 0;
 }
 
 .password-requirement-item.met {
-    color: #10b981; /* Green for met requirements */
+  color: #10b981; /* Green for met requirements */
 }
 
 .password-requirement-item.unmet {
-    color: #6b7280; /* Gray for unmet requirements */
+  color: #6b7280; /* Gray for unmet requirements */
 }
 
 /* Email exists dialog buttons */
 .email-exists-buttons {
-    margin-top: 15px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .email-exists-btn {
-    padding: 8px 16px;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
+  padding: 8px 16px;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
-.email-exists-btn.sign-in { background: var(--accent-blue); }
-.email-exists-btn.forgot-password { background: var(--accent-green); }
-.email-exists-btn.different-email { background: #6b7280; }
+.email-exists-btn.sign-in {
+  background: var(--accent-blue);
+}
+.email-exists-btn.forgot-password {
+  background: var(--accent-green);
+}
+.email-exists-btn.different-email {
+  background: #6b7280;
+}
 ```
 
 ### Message Display Without Auto-Hide Timeouts
 
 #### ✅ User-Controlled Message Visibility
+
 ```javascript
 // Remove automatic timeouts for better UX
 static _showSecureMessage(message, type = 'error') {
@@ -198,7 +224,7 @@ static _showSecureMessage(message, type = 'error') {
     messageDiv.textContent = sanitizedMessage;
     messageDiv.className = `message ${type}`;
     messageDiv.classList.remove('hidden');
-    
+
     // NO TIMEOUT - Let user control visibility
     // messageDiv stays visible until user interaction
     messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -212,81 +238,86 @@ static _showSecureMessage(message, type = 'error') {
 ### Password Toggle Example
 
 #### ❌ Insecure Implementation (Before)
+
 ```html
 <!-- INLINE STYLES VIOLATE CSP -->
 <button type="button" class="password-toggle" onclick="togglePassword()">
-    <span class="show-text">👁️</span>
-    <span class="hide-text" style="display: none;">🙈</span>
+  <span class="show-text">👁️</span>
+  <span class="hide-text" style="display: none;">🙈</span>
 </button>
 ```
 
 #### ✅ Secure Implementation (After)
+
 ```html
 <!-- CSP COMPLIANT -->
 <button type="button" class="password-toggle" data-target="password">
-    <span class="show-text">👁️</span>
-    <span class="hide-text hidden">🙈</span>
+  <span class="show-text">👁️</span>
+  <span class="hide-text hidden">🙈</span>
 </button>
 ```
 
 ### CSS Classes for Visibility Control
 
 #### ✅ Secure CSS Implementation
+
 ```css
 /* Replace inline styles with CSS classes */
 .password-toggle .show-text,
 .password-toggle .hide-text {
-    font-size: 0.8rem;
-    line-height: 1;
-    user-select: none;
+  font-size: 0.8rem;
+  line-height: 1;
+  user-select: none;
 }
 
 .password-toggle .hidden {
-    display: none;
+  display: none;
 }
 
 /* Additional security-focused styles */
 .password-input-container {
-    position: relative;
-    display: flex;
-    align-items: center;
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .password-toggle:focus {
-    outline: 2px solid var(--accent-blue);
-    outline-offset: 2px;
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
 }
 ```
 
 ### JavaScript Event Delegation
 
 #### ❌ Insecure JavaScript (Before)
+
 ```javascript
 // VIOLATES CSP - uses style manipulation
-toggle.addEventListener('click', function() {
-    if (targetInput.type === 'password') {
-        targetInput.type = 'text';
-        showText.style.display = 'none';        // CSP VIOLATION
-        hideText.style.display = 'inline';      // CSP VIOLATION
-    }
+toggle.addEventListener("click", function () {
+  if (targetInput.type === "password") {
+    targetInput.type = "text";
+    showText.style.display = "none"; // CSP VIOLATION
+    hideText.style.display = "inline"; // CSP VIOLATION
+  }
 });
 ```
 
 #### ✅ Secure JavaScript (After)
+
 ```javascript
 // CSP COMPLIANT - uses class manipulation
 static _initializePasswordToggles() {
     const passwordToggles = document.querySelectorAll('.password-toggle');
-    
+
     passwordToggles.forEach(toggle => {
         toggle.addEventListener('click', function() {
             const targetId = this.getAttribute('data-target');
             const targetInput = document.getElementById(targetId);
             const showText = this.querySelector('.show-text');
             const hideText = this.querySelector('.hide-text');
-            
+
             if (!targetInput || !showText || !hideText) return;
-            
+
             if (targetInput.type === 'password') {
                 // Show password
                 targetInput.type = 'text';
@@ -301,7 +332,7 @@ static _initializePasswordToggles() {
                 this.setAttribute('aria-label', 'Show password');
             }
         });
-        
+
         // Set initial aria-label for accessibility
         toggle.setAttribute('aria-label', 'Show password');
     });
@@ -313,34 +344,45 @@ static _initializePasswordToggles() {
 ## 🛡️ Security Headers Configuration
 
 ### Complete Security Headers Suite
+
 ```html
 <!-- Content Security Policy -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
+<meta
+  http-equiv="Content-Security-Policy"
+  content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
+/>
 
 <!-- Prevent MIME type sniffing -->
-<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="X-Content-Type-Options" content="nosniff" />
 
 <!-- Prevent clickjacking -->
-<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="X-Frame-Options" content="DENY" />
 
 <!-- Enable XSS protection -->
-<meta http-equiv="X-XSS-Protection" content="1; mode=block">
+<meta http-equiv="X-XSS-Protection" content="1; mode=block" />
 
 <!-- Control referrer information -->
-<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="referrer" content="strict-origin-when-cross-origin" />
 ```
 
 ### Server-Side Headers (Additional Recommendations)
+
 ```javascript
 // Express.js example
 app.use((req, res, next) => {
-    // Strict Transport Security (HTTPS enforcement)
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-    
-    // Permissions Policy (feature restrictions)
-    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-    
-    next();
+  // Strict Transport Security (HTTPS enforcement)
+  res.setHeader(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains",
+  );
+
+  // Permissions Policy (feature restrictions)
+  res.setHeader(
+    "Permissions-Policy",
+    "geolocation=(), microphone=(), camera=()",
+  );
+
+  next();
 });
 ```
 
@@ -351,51 +393,54 @@ app.use((req, res, next) => {
 ### Input Sanitization and Validation
 
 #### ✅ Secure Input Handling
+
 ```javascript
 // Security utility functions
 const SecurityUtils = {
-    sanitizeInput: function(input) {
-        if (!input || typeof input !== 'string') return '';
-        return input.trim();
-    },
-    
-    sanitizeText: function(text) {
-        if (!text || typeof text !== 'string') return '';
-        // Remove potentially dangerous characters
-        return text.trim().replace(/[<>]/g, '');
-    },
-    
-    validateInput: function(input, pattern, maxLength) {
-        if (!input || typeof input !== 'string') return false;
-        if (input.length > maxLength) return false;
-        if (this.HTML_PATTERN.test(input)) return false;
-        return pattern.test(input);
-    }
+  sanitizeInput: function (input) {
+    if (!input || typeof input !== "string") return "";
+    return input.trim();
+  },
+
+  sanitizeText: function (text) {
+    if (!text || typeof text !== "string") return "";
+    // Remove potentially dangerous characters
+    return text.trim().replace(/[<>]/g, "");
+  },
+
+  validateInput: function (input, pattern, maxLength) {
+    if (!input || typeof input !== "string") return false;
+    if (input.length > maxLength) return false;
+    if (this.HTML_PATTERN.test(input)) return false;
+    return pattern.test(input);
+  },
 };
 
 // Configuration with security patterns
 const CONFIG = {
-    VALIDATION: {
-        MAX_EMAIL_LENGTH: 100,
-        MAX_PASSWORD_LENGTH: 128,
-        MAX_USERNAME_LENGTH: 50,
-        MIN_PASSWORD_LENGTH: 8,
-        EMAIL_PATTERN: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        HTML_PATTERN: /<[^>]*>/g,
-        USERNAME_PATTERN: /^[a-zA-Z0-9._-]+$/,
-    }
+  VALIDATION: {
+    MAX_EMAIL_LENGTH: 100,
+    MAX_PASSWORD_LENGTH: 128,
+    MAX_USERNAME_LENGTH: 50,
+    MIN_PASSWORD_LENGTH: 8,
+    EMAIL_PATTERN: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    HTML_PATTERN: /<[^>]*>/g,
+    USERNAME_PATTERN: /^[a-zA-Z0-9._-]+$/,
+  },
 };
 ```
 
 ### Secure Message Display
 
 #### ❌ Insecure Message Display (Before)
+
 ```javascript
 // SECURITY RISK - innerHTML vulnerability
-messageDiv.innerHTML = userMessage;  // XSS RISK!
+messageDiv.innerHTML = userMessage; // XSS RISK!
 ```
 
 #### ✅ Secure Message Display (After)
+
 ```javascript
 // SECURE - textContent only, no innerHTML
 static _showSecureMessage(message, type = 'error') {
@@ -410,7 +455,7 @@ static _showSecureMessage(message, type = 'error') {
     messageDiv.textContent = sanitizedMessage;  // SAFE
     messageDiv.className = `message ${type}`;
     messageDiv.classList.remove('hidden');
-    
+
     // Auto-hide messages
     setTimeout(() => {
         messageDiv.classList.add('hidden');
@@ -421,6 +466,7 @@ static _showSecureMessage(message, type = 'error') {
 ### Rate Limiting Implementation
 
 #### ✅ Client-Side Rate Limiting
+
 ```javascript
 // Rate limiting for security
 static _initializeRateLimiting() {
@@ -429,14 +475,14 @@ static _initializeRateLimiting() {
         windowStart: Date.now(),
         isLocked: false
     };
-    
+
     // Check for existing rate limit data
     const storedData = localStorage.getItem('registrationRateLimit');
     if (storedData) {
         try {
             const parsed = JSON.parse(storedData);
             const timeDiff = Date.now() - parsed.windowStart;
-            
+
             // Reset if window expired
             if (timeDiff < CONFIG.RATE_LIMIT.WINDOW_MINUTES * 60 * 1000) {
                 this.rateLimitData = parsed;
@@ -466,52 +512,54 @@ static _checkRateLimit() {
 ## 🎨 CSS Security Best Practices
 
 ### Secure CSS Variable Usage
+
 ```css
 /* Secure CSS variables - no user input */
 :root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --text-primary: #1e293b;
-    --accent-blue: #667eea;
-    --surface-light: rgba(255, 255, 255, 0.98);
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --text-primary: #1e293b;
+  --accent-blue: #667eea;
+  --surface-light: rgba(255, 255, 255, 0.98);
 }
 
 /* Use CSS variables instead of inline styles */
 .secure-element {
-    color: var(--text-primary);
-    background: var(--surface-light);
+  color: var(--text-primary);
+  background: var(--surface-light);
 }
 ```
 
 ### State Management Through Classes
+
 ```css
 /* Visibility control through classes, not inline styles */
 .hidden {
-    display: none !important;
+  display: none !important;
 }
 
 .show {
-    display: block !important;
+  display: block !important;
 }
 
 .fade-in {
-    opacity: 1;
-    transition: opacity 0.3s ease;
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
 .fade-out {
-    opacity: 0;
-    transition: opacity 0.3s ease;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 /* Form validation states */
 .form-group input.valid {
-    border-color: var(--accent-green);
-    background: rgba(16, 185, 129, 0.05);
+  border-color: var(--accent-green);
+  background: rgba(16, 185, 129, 0.05);
 }
 
 .form-group input.invalid {
-    border-color: #ef4444;
-    background: rgba(239, 68, 68, 0.05);
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
 }
 ```
 
@@ -520,53 +568,57 @@ static _checkRateLimit() {
 ## 📝 Form Security Implementation
 
 ### Secure Form Structure
+
 ```html
 <!-- Comprehensive security attributes -->
 <form id="registrationForm" class="registration-form">
-    <!-- Email input with security -->
-    <div class="form-group">
-        <label for="email">Email</label>
-        <input 
-            type="email" 
-            id="email" 
-            name="email" 
-            required 
-            autocomplete="email"
-            maxlength="100">
-    </div>
+  <!-- Email input with security -->
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input
+      type="email"
+      id="email"
+      name="email"
+      required
+      autocomplete="email"
+      maxlength="100"
+    />
+  </div>
 
-    <!-- Password with secure toggle -->
-    <div class="form-group">
-        <label for="password">Password</label>
-        <div class="password-input-container">
-            <input 
-                type="password" 
-                id="password" 
-                name="password" 
-                required 
-                autocomplete="new-password"
-                maxlength="128">
-            <button type="button" class="password-toggle" data-target="password">
-                <span class="show-text">👁️</span>
-                <span class="hide-text hidden">🙈</span>
-            </button>
-        </div>
+  <!-- Password with secure toggle -->
+  <div class="form-group">
+    <label for="password">Password</label>
+    <div class="password-input-container">
+      <input
+        type="password"
+        id="password"
+        name="password"
+        required
+        autocomplete="new-password"
+        maxlength="128"
+      />
+      <button type="button" class="password-toggle" data-target="password">
+        <span class="show-text">👁️</span>
+        <span class="hide-text hidden">🙈</span>
+      </button>
     </div>
+  </div>
 
-    <!-- CSRF protection (server-side) -->
-    <input type="hidden" name="_token" value="{{ csrf_token }}">
-    
-    <button type="submit" class="create-account-btn">Create Account</button>
+  <!-- CSRF protection (server-side) -->
+  <input type="hidden" name="_token" value="{{ csrf_token }}" />
+
+  <button type="submit" class="create-account-btn">Create Account</button>
 </form>
 ```
 
 ### Secure Form Validation
+
 ```javascript
 static _validateRegistrationInputs(userData) {
     // Email validation with security checks
     if (!SecurityUtils.validateInput(
-        userData.email, 
-        CONFIG.VALIDATION.EMAIL_PATTERN, 
+        userData.email,
+        CONFIG.VALIDATION.EMAIL_PATTERN,
         CONFIG.VALIDATION.MAX_EMAIL_LENGTH
     )) {
         this._showSecureMessage('Please enter a valid email address.', 'error');
@@ -576,7 +628,7 @@ static _validateRegistrationInputs(userData) {
     // Password validation
     if (!this._validatePassword(userData.password)) {
         this._showSecureMessage(
-            `Password must be at least ${CONFIG.VALIDATION.MIN_PASSWORD_LENGTH} characters long and contain no HTML tags.`, 
+            `Password must be at least ${CONFIG.VALIDATION.MIN_PASSWORD_LENGTH} characters long and contain no HTML tags.`,
             'error'
         );
         return false;
@@ -601,9 +653,11 @@ static _validateRegistrationInputs(userData) {
 ## 🔧 Real-World Implementation Challenges
 
 ### Challenge 1: Server Response Mismatch
+
 **Problem**: Server returns `code: "EMAIL_EXISTS"` but JavaScript checks for `error: "email_exists"`
 
 #### ❌ Original Code (Broken)
+
 ```javascript
 static _handleRegistrationError(data, status) {
     if (data.error) {
@@ -617,11 +671,12 @@ static _handleRegistrationError(data, status) {
 ```
 
 #### ✅ Fixed Implementation
+
 ```javascript
 static _handleRegistrationError(data, status) {
     // Check both 'code' and 'error' fields with multiple formats
     const errorCode = data.code || data.error;
-    
+
     if (errorCode) {
         switch (errorCode) {
             case 'EMAIL_EXISTS':      // Server format
@@ -635,7 +690,7 @@ static _handleRegistrationError(data, status) {
                 break;
             // Fallback: analyze error message text
             default:
-                if (data.error && data.error.toLowerCase().includes('email') && 
+                if (data.error && data.error.toLowerCase().includes('email') &&
                     data.error.toLowerCase().includes('already exists')) {
                     this._showEmailExistsDialog();
                     return;
@@ -646,31 +701,37 @@ static _handleRegistrationError(data, status) {
 ```
 
 ### Challenge 2: CSP Console Error Flooding
+
 **Problem**: Hundreds of CSP violations when typing in password field
 
 #### Root Cause Analysis
+
 ```javascript
 // This single function call triggered 50+ CSP violations per keystroke
-strengthDiv.style.cssText = 'width: 100%; margin-top: 8px; font-size: 0.8rem;';
+strengthDiv.style.cssText = "width: 100%; margin-top: 8px; font-size: 0.8rem;";
 
 // Each style property = 1 CSP violation
 // Called on every 'input' event = massive console spam
 ```
 
 #### Solution Strategy
+
 1. **Pre-define CSS classes** for all dynamic states
 2. **Use className assignment** instead of style manipulation
 3. **Batch DOM updates** to minimize CSP checks
 4. **Test with real user interaction** (not just form submission)
 
 ### Challenge 3: Message Timeout UX Issues
+
 **Problem**: Important dialogs disappeared too quickly for users to read
 
 #### User Feedback
+
 - "The email dialog vanished before I could click anything"
 - "Error messages disappear while I'm still reading them"
 
 #### ✅ Solution: User-Controlled Visibility
+
 ```javascript
 // REMOVED all setTimeout auto-hide logic
 // Messages stay visible until:
@@ -681,53 +742,58 @@ strengthDiv.style.cssText = 'width: 100%; margin-top: 8px; font-size: 0.8rem;';
 ```
 
 ### Challenge 4: Form Validation State Management
+
 **Problem**: Mixed validation states caused UI confusion
 
 #### ✅ Comprehensive State System
+
 ```css
 /* Clear visual hierarchy for validation states */
 .form-group input.valid {
-    border-color: var(--accent-green);
-    background: rgba(16, 185, 129, 0.05);
+  border-color: var(--accent-green);
+  background: rgba(16, 185, 129, 0.05);
 }
 
 .form-group input.invalid {
-    border-color: #ef4444;
-    background: rgba(239, 68, 68, 0.05);
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
 }
 
 /* Required field indicators */
 .form-group input[required] {
-    border-left: 3px solid rgba(239, 68, 68, 0.3);
+  border-left: 3px solid rgba(239, 68, 68, 0.3);
 }
 ```
 
 ### Challenge 5: Password Toggle Accessibility
+
 **Problem**: Screen readers couldn't understand password visibility state
 
 #### ✅ Enhanced Accessibility
+
 ```javascript
-toggle.addEventListener('click', function() {
-    if (targetInput.type === 'password') {
-        targetInput.type = 'text';
-        showText.classList.add('hidden');
-        hideText.classList.remove('hidden');
-        this.setAttribute('aria-label', 'Hide password'); // Key addition
-    } else {
-        targetInput.type = 'password';
-        showText.classList.remove('hidden');
-        hideText.classList.add('hidden');
-        this.setAttribute('aria-label', 'Show password'); // Key addition
-    }
+toggle.addEventListener("click", function () {
+  if (targetInput.type === "password") {
+    targetInput.type = "text";
+    showText.classList.add("hidden");
+    hideText.classList.remove("hidden");
+    this.setAttribute("aria-label", "Hide password"); // Key addition
+  } else {
+    targetInput.type = "password";
+    showText.classList.remove("hidden");
+    hideText.classList.add("hidden");
+    this.setAttribute("aria-label", "Show password"); // Key addition
+  }
 });
 
 // Set initial state
-toggle.setAttribute('aria-label', 'Show password');
+toggle.setAttribute("aria-label", "Show password");
 ```
 
 ### Debugging CSP Issues
 
 #### Browser Console Patterns
+
 ```javascript
 // Look for these error patterns:
 // "Refused to apply inline style because it violates CSP directive 'style-src 'self''"
@@ -735,14 +801,16 @@ toggle.setAttribute('aria-label', 'Show password');
 
 // Debug helper for finding CSP violations
 const findInlineStyles = () => {
-    const inlineStyles = document.querySelectorAll('[style]');
-    const inlineHandlers = document.querySelectorAll('[onclick], [onsubmit], [onload]');
-    
-    console.log('Inline styles found:', inlineStyles.length);
-    console.log('Inline handlers found:', inlineHandlers.length);
-    
-    inlineStyles.forEach(el => console.log('Style violation:', el));
-    inlineHandlers.forEach(el => console.log('Handler violation:', el));
+  const inlineStyles = document.querySelectorAll("[style]");
+  const inlineHandlers = document.querySelectorAll(
+    "[onclick], [onsubmit], [onload]",
+  );
+
+  console.log("Inline styles found:", inlineStyles.length);
+  console.log("Inline handlers found:", inlineHandlers.length);
+
+  inlineStyles.forEach((el) => console.log("Style violation:", el));
+  inlineHandlers.forEach((el) => console.log("Handler violation:", el));
 };
 ```
 
@@ -751,6 +819,7 @@ const findInlineStyles = () => {
 ## ✅ Implementation Checklist
 
 ### HTML Security Checklist
+
 - [ ] Remove all `onclick`, `onsubmit`, `onload` event handlers
 - [ ] Remove all `style="..."` inline styles
 - [ ] **REMOVE X-Frame-Options meta tag** (HTTP header only!)
@@ -763,6 +832,7 @@ const findInlineStyles = () => {
 - [ ] Test with screen readers for accessibility
 
 ### CSS Security Checklist
+
 - [ ] Define all styles in external CSS files
 - [ ] Create CSS classes for ALL dynamic states (no inline styles)
 - [ ] Implement `.hidden` class for visibility control
@@ -774,6 +844,7 @@ const findInlineStyles = () => {
 - [ ] Create button state classes (instead of inline style manipulation)
 
 ### JavaScript Security Checklist
+
 - [ ] Use `textContent` instead of `innerHTML` for user content
 - [ ] **Replace ALL `style.cssText` with `className` assignments**
 - [ ] **Replace ALL `style.property` with `classList` methods**
@@ -788,6 +859,7 @@ const findInlineStyles = () => {
 - [ ] **Test real user interaction** (typing, clicking) for CSP violations
 
 ### Security Headers Checklist
+
 - [ ] Content-Security-Policy (strict, no unsafe-inline, no unsafe-eval)
 - [ ] X-Content-Type-Options: nosniff
 - [ ] **X-Frame-Options: Configure at SERVER level only** (not meta tag)
@@ -797,6 +869,7 @@ const findInlineStyles = () => {
 - [ ] **Test headers with curl -I** before deployment
 
 ### Real-World Testing Checklist
+
 - [ ] **Type in all form fields** to test for CSP violations during input events
 - [ ] **Submit forms with invalid data** to test error handling
 - [ ] **Test password toggle functionality** with screen readers
@@ -813,6 +886,7 @@ const findInlineStyles = () => {
 ### CSP Violation Testing
 
 #### Step-by-Step Real-World Testing
+
 ```javascript
 // 1. Open browser console (F12)
 // 2. Navigate to registration page
@@ -832,47 +906,55 @@ const findInlineStyles = () => {
 ```
 
 #### Automated CSP Testing
+
 ```javascript
 // Add to your test suite - based on test-registration experience
 const CSPComplianceTest = {
-    testPasswordStrengthIndicator() {
-        const passwordInput = document.getElementById('password');
-        const initialViolations = this.getCSPViolationCount();
-        
-        // Simulate typing (this revealed our original issue)
-        'TestPass123!'.split('').forEach((char, index) => {
-            passwordInput.value = 'TestPass123!'.slice(0, index + 1);
-            passwordInput.dispatchEvent(new Event('input'));
-        });
-        
-        const finalViolations = this.getCSPViolationCount();
-        console.assert(
-            finalViolations === initialViolations,
-            `CSP violations during password input: ${finalViolations - initialViolations}`
-        );
-    },
-    
-    testEmailExistsDialog() {
-        // Test the smart email redirect dialog
-        RegistrationPageService._showEmailExistsDialog();
-        
-        const dialogButtons = document.querySelectorAll('.email-exists-btn');
-        console.assert(dialogButtons.length === 3, 'Email dialog should have 3 buttons');
-        
-        // Verify no inline styles on buttons
-        dialogButtons.forEach(btn => {
-            console.assert(!btn.hasAttribute('style'), 'Button should not have inline styles');
-        });
-    },
-    
-    getCSPViolationCount() {
-        // Mock function - in real testing, monitor console.error
-        return window.cspViolationCount || 0;
-    }
+  testPasswordStrengthIndicator() {
+    const passwordInput = document.getElementById("password");
+    const initialViolations = this.getCSPViolationCount();
+
+    // Simulate typing (this revealed our original issue)
+    "TestPass123!".split("").forEach((char, index) => {
+      passwordInput.value = "TestPass123!".slice(0, index + 1);
+      passwordInput.dispatchEvent(new Event("input"));
+    });
+
+    const finalViolations = this.getCSPViolationCount();
+    console.assert(
+      finalViolations === initialViolations,
+      `CSP violations during password input: ${finalViolations - initialViolations}`,
+    );
+  },
+
+  testEmailExistsDialog() {
+    // Test the smart email redirect dialog
+    RegistrationPageService._showEmailExistsDialog();
+
+    const dialogButtons = document.querySelectorAll(".email-exists-btn");
+    console.assert(
+      dialogButtons.length === 3,
+      "Email dialog should have 3 buttons",
+    );
+
+    // Verify no inline styles on buttons
+    dialogButtons.forEach((btn) => {
+      console.assert(
+        !btn.hasAttribute("style"),
+        "Button should not have inline styles",
+      );
+    });
+  },
+
+  getCSPViolationCount() {
+    // Mock function - in real testing, monitor console.error
+    return window.cspViolationCount || 0;
+  },
 };
 ```
 
 ### Security Header Validation
+
 ```bash
 # Use curl to test security headers
 curl -I https://your-domain.com/test-registration.html
@@ -885,48 +967,52 @@ curl -I https://your-domain.com/test-registration.html
 ```
 
 ### XSS Testing
+
 ```javascript
 // Test input sanitization
 const testInputs = [
-    '<script>alert("XSS")</script>',
-    '<img src="x" onerror="alert(1)">',
-    '"><script>alert("XSS")</script>',
-    'javascript:alert("XSS")'
+  '<script>alert("XSS")</script>',
+  '<img src="x" onerror="alert(1)">',
+  '"><script>alert("XSS")</script>',
+  'javascript:alert("XSS")',
 ];
 
-testInputs.forEach(input => {
-    const sanitized = SecurityUtils.sanitizeText(input);
-    console.log(`Input: ${input}`);
-    console.log(`Sanitized: ${sanitized}`);
-    // Should remove < and > characters
+testInputs.forEach((input) => {
+  const sanitized = SecurityUtils.sanitizeText(input);
+  console.log(`Input: ${input}`);
+  console.log(`Sanitized: ${sanitized}`);
+  // Should remove < and > characters
 });
 ```
 
 ### Automated Security Testing
+
 ```javascript
 // Security test suite
 const SecurityTests = {
-    testCSPCompliance: function() {
-        // Check for inline event handlers
-        const inlineHandlers = document.querySelectorAll('[onclick], [onsubmit], [onload]');
-        console.assert(inlineHandlers.length === 0, 'Found inline event handlers');
-        
-        // Check for inline styles
-        const inlineStyles = document.querySelectorAll('[style]');
-        console.assert(inlineStyles.length === 0, 'Found inline styles');
-    },
-    
-    testInputSanitization: function() {
-        const maliciousInput = '<script>alert("xss")</script>';
-        const sanitized = SecurityUtils.sanitizeText(maliciousInput);
-        console.assert(!sanitized.includes('<'), 'Input sanitization failed');
-    },
-    
-    runAllTests: function() {
-        this.testCSPCompliance();
-        this.testInputSanitization();
-        console.log('Security tests completed');
-    }
+  testCSPCompliance: function () {
+    // Check for inline event handlers
+    const inlineHandlers = document.querySelectorAll(
+      "[onclick], [onsubmit], [onload]",
+    );
+    console.assert(inlineHandlers.length === 0, "Found inline event handlers");
+
+    // Check for inline styles
+    const inlineStyles = document.querySelectorAll("[style]");
+    console.assert(inlineStyles.length === 0, "Found inline styles");
+  },
+
+  testInputSanitization: function () {
+    const maliciousInput = '<script>alert("xss")</script>';
+    const sanitized = SecurityUtils.sanitizeText(maliciousInput);
+    console.assert(!sanitized.includes("<"), "Input sanitization failed");
+  },
+
+  runAllTests: function () {
+    this.testCSPCompliance();
+    this.testInputSanitization();
+    console.log("Security tests completed");
+  },
 };
 
 // Run tests in console
@@ -938,6 +1024,7 @@ SecurityTests.runAllTests();
 ## 🎯 Security Grade Achievement
 
 ### A+ Security Compliance
+
 ```
 ✅ CSP Level 3 Compliance        - Strict policy, no unsafe directives
 ✅ Zero Inline Handlers          - All events through delegation
@@ -950,6 +1037,7 @@ SecurityTests.runAllTests();
 ```
 
 ### Performance Impact
+
 ```
 XSS Protection:          < 1ms per operation
 CSP Compliance:          0ms (compile-time)
@@ -964,12 +1052,14 @@ Overall Impact:          Negligible
 ## 🔄 Maintenance Guidelines
 
 ### Regular Security Reviews
+
 1. **Monthly**: Review CSP violations in browser console
 2. **Quarterly**: Update security headers and test configuration
 3. **Per Release**: Run complete security test suite
 4. **Annual**: Third-party security audit
 
 ### Security Update Process
+
 1. Test changes in development environment
 2. Validate CSP compliance
 3. Run security test suite
@@ -977,6 +1067,7 @@ Overall Impact:          Negligible
 5. Document any security-related changes
 
 ### Emergency Security Response
+
 1. Immediately remove 'unsafe-inline' if accidentally added
 2. Sanitize any user-generated content
 3. Review and update input validation
@@ -990,6 +1081,7 @@ Overall Impact:          Negligible
 ### test-registration.html - Template Implementation Results
 
 #### ✅ Security Compliance Achieved
+
 ```
 BEFORE Implementation:
 ❌ 50+ CSP violations per password keystroke
@@ -1009,6 +1101,7 @@ AFTER Implementation:
 ```
 
 #### Performance Impact Assessment
+
 ```
 CSP Compliance Changes:
 - Page Load: No measurable impact
@@ -1027,55 +1120,73 @@ User Experience Improvements:
 ### Template Files for Future Implementation
 
 #### Core Template Files
+
 1. **test-registration.html** - Secure form structure
 2. **test-registration.css** - CSP-compliant styling with state classes
 3. **test-registration.js** - Security-first JavaScript patterns
 
 #### Key Patterns to Reuse
+
 ```javascript
 // Error handling with multiple formats
 const errorCode = data.code || data.error;
 switch (errorCode) {
-    case 'EMAIL_EXISTS':
-    case 'email_exists':
-        // Handle both server formats
+  case "EMAIL_EXISTS":
+  case "email_exists":
+  // Handle both server formats
 }
 
 // CSP-compliant dynamic styling
-element.className = 'password-requirement-item met';
+element.className = "password-requirement-item met";
 // NOT: element.style.color = '#10b981';
 
 // User-controlled message display
-messageDiv.classList.remove('hidden');
+messageDiv.classList.remove("hidden");
 // NO setTimeout auto-hide for important dialogs
 
 // Accessibility-enhanced interactions
-toggle.setAttribute('aria-label', 'Hide password');
+toggle.setAttribute("aria-label", "Hide password");
 ```
 
 ### Future Login/Logout System Guidelines
 
 #### 1. Copy Security Headers from test-registration.html
+
 ```html
 <!-- Use this exact header configuration -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
-<meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta http-equiv="X-XSS-Protection" content="1; mode=block">
-<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta
+  http-equiv="Content-Security-Policy"
+  content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
+/>
+<meta http-equiv="X-Content-Type-Options" content="nosniff" />
+<meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
 <!-- DO NOT include X-Frame-Options meta tag -->
 ```
 
 #### 2. Implement Validation State CSS Classes
+
 ```css
 /* Copy these essential classes to all form pages */
-.form-group input.valid { /* green border */ }
-.form-group input.invalid { /* red border */ }
-.field-validation-message.error { /* error styling */ }
-.field-validation-message.success { /* success styling */ }
-.hidden { display: none !important; }
+.form-group input.valid {
+  /* green border */
+}
+.form-group input.invalid {
+  /* red border */
+}
+.field-validation-message.error {
+  /* error styling */
+}
+.field-validation-message.success {
+  /* success styling */
+}
+.hidden {
+  display: none !important;
+}
 ```
 
 #### 3. Use Proven JavaScript Patterns
+
 - Replace all `style.*` with `classList.*`
 - Use `textContent` never `innerHTML` for user data
 - Handle multiple server response formats
@@ -1083,6 +1194,7 @@ toggle.setAttribute('aria-label', 'Hide password');
 - Add ARIA labels for dynamic interactions
 
 #### 4. Test Methodology
+
 1. **Interactive Testing**: Type in every field, click every button
 2. **Console Monitoring**: Watch for CSP violations during real use
 3. **Accessibility Testing**: Use screen reader to test all interactions
@@ -1095,7 +1207,7 @@ toggle.setAttribute('aria-label', 'Hide password');
 
 ---
 
-*Last Updated: November 18, 2025*  
-*Security Level: Enterprise Grade (A+)*  
-*Compliance: OWASP Top 10, CSP Level 3, Modern Security Headers*  
-*Template Status: Production-Ready (test-registration.html validated)*
+_Last Updated: November 18, 2025_  
+_Security Level: Enterprise Grade (A+)_  
+_Compliance: OWASP Top 10, CSP Level 3, Modern Security Headers_  
+_Template Status: Production-Ready (test-registration.html validated)_
