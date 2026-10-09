@@ -97,7 +97,7 @@ financial-calculators/
 │   └── deploy-cloudflare-worker.yml # Auto-deploys the Worker on changes
 ├── README.md                    # Project documentation
 ├── .gitignore                   # Git ignore rules
-└── LICENSE (optional)           # MIT License
+└── LICENSE                      # MIT License
 ```
 
 ## 🔒 Security Features
