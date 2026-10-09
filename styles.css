@@ -190,23 +190,6 @@ body {
     /* Prevent text wrapping */
 }
 
-/* Two Column Layout */
-.calculator-layout {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 20px;
-    align-items: start;
-}
-
-/* Calculator Container - Left Column */
-.calculator-container {
-    background: var(--surface-light);
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: var(--shadow-medium);
-    backdrop-filter: blur(10px);
-}
-
 /* Message Display */
 .message {
     padding: 8px 12px;
@@ -608,38 +591,6 @@ button:focus {
     margin: 0;
 }
 
-/* Rent Panel - Right Column */
-.rent-panel {
-    background: linear-gradient(135deg, rgba(251, 146, 60, .8) 0%, rgba(249, 115, 22, 0.8) 100%);
-    border: 2px solid rgba(251, 146, 60, 0.2);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: var(--shadow-medium);
-    backdrop-filter: blur(10px);
-    min-height: fit-content;
-    position: sticky;
-    top: 20px;
-}
-
-.rent-panel-header {
-    text-align: center;
-    margin-bottom: 16px;
-}
-
-.rent-panel-header h3 {
-    font-size: 1.1rem;
-    color: #fffbf9;
-    margin: 0 0 6px 0;
-    font-weight: 700;
-}
-
-.rent-subtitle {
-    font-size: 0.85rem;
-    color: var(--white-bro);
-    margin: 0;
-    font-style: italic;
-}
-
 /* Rent Form Styling */
 .rent-form {
     margin-bottom: 16px;
@@ -939,32 +890,6 @@ button:focus {
     height: 12px;
 }
 
-.form-select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 2px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 0.95rem;
-    font-family: inherit;
-    background-color: white;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.form-select:focus {
-    outline: none;
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.form-select:disabled {
-    background-color: #f8f9fa;
-    color: var(--text-secondary);
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
 /* Loan Type Indicator */
 .loan-type-indicator {
     background: white;
@@ -973,10 +898,6 @@ button:focus {
     margin-top: 12px;
     border: 1px solid var(--border-color);
     animation: fadeIn 0.3s ease-in;
-}
-
-.loan-type-badge {
-    margin-bottom: 8px;
 }
 
 .badge {
@@ -999,15 +920,6 @@ button:focus {
     background: linear-gradient(135deg, rgba(251, 146, 60, 0.15) 0%, rgba(249, 115, 22, 0.15) 100%);
     color: #ea580c;
     border: 1px solid rgba(251, 146, 60, 0.3);
-}
-
-.loan-limit-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 8px;
 }
 
 .limit-label {
@@ -1388,21 +1300,6 @@ button:focus {
         padding: 10px;
     }
 
-    .calculator-layout {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-
-    .rent-panel {
-        order: 1;
-        position: static;
-        margin-bottom: 15px;
-    }
-
-    .calculator-container {
-        order: 2;
-    }
-
     .compact-rates-content {
         flex-direction: column;
         gap: 10px;
@@ -1411,18 +1308,6 @@ button:focus {
 
     .rates-inline {
         justify-content: center;
-    }
-
-    .refresh-btn-compact {
-        width: 28px;
-        height: 28px;
-        min-width: 28px;
-        max-width: 28px;
-    }
-
-    .refresh-btn-compact svg {
-        width: 16px;
-        height: 16px;
     }
 }
 
@@ -1435,21 +1320,8 @@ button:focus {
         font-size: 1.5rem;
     }
 
-    .calculator-container {
-        padding: 18px;
-    }
-
-    .rent-panel {
-        padding: 15px;
-    }
-
     .loan-limit-container {
         padding: 16px;
-    }
-
-    .location-inputs {
-        grid-template-columns: 1fr;
-        gap: 15px;
     }
 
     .alert-content {
@@ -1511,7 +1383,6 @@ button:focus {
     }
 
     /* Compact forms */
-    .calculator-container,
     .tab-panel {
         padding: 12px;
     }
@@ -1693,10 +1564,6 @@ button:focus {
         font-size: 0.65rem;
     }
 
-    .county-limit {
-        font-size: 0.75rem;
-    }
-
     /* Compact message and tooltip */
     .message {
         padding: 8px 12px;
@@ -1729,10 +1596,6 @@ button:focus {
 
     .payment-label {
         font-size: 0.85rem;
-    }
-
-    .payment-highlight {
-        padding: 12px;
     }
 
     /* Reduce icon sizes */
@@ -1804,7 +1667,6 @@ button:focus {
         font-size: 0.75rem;
     }
 
-    .calculator-container,
     .tab-panel {
         padding: 10px;
     }
@@ -1849,8 +1711,7 @@ button:focus {
     .button-group,
     .info-icon,
     .refresh-btn-compact,
-    .mortgage-rates,
-    .rent-panel {
+    .mortgage-rates {
         display: none !important;
     }
 
@@ -1862,11 +1723,6 @@ button:focus {
     body {
         background: white;
         padding: 0;
-    }
-
-    .calculator-container {
-        box-shadow: none;
-        border: 1px solid #000;
     }
 }
 
