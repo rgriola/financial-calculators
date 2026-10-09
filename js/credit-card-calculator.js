@@ -16,6 +16,10 @@ export const CreditCardCalculator = {
     // DOM element references cache
     elements: {},
 
+    // Tracks whether the user has manually typed into the monthly payment
+    // field, so we stop auto-filling it once they've entered their own value
+    hasUserEditedPayment: false,
+
     /**
      * Initialize the credit card calculator module
      * Sets up event listeners and caches DOM element references
@@ -105,6 +109,48 @@ export const CreditCardCalculator = {
         if (this.elements.monthlyPaymentInput) {
             this.elements.monthlyPaymentInput.addEventListener('input', () => debouncedValidate(this.elements.monthlyPaymentInput));
         }
+
+        // Auto-fill the monthly payment with the estimated card minimum once
+        // both balance and APR are entered, unless the user has already
+        // typed their own payment amount
+        const debouncedAutoFill = Utils.debounce(() => this.autoFillMinimumPayment(), AppConfig.ui.debounceDelay);
+
+        if (this.elements.balanceInput) {
+            this.elements.balanceInput.addEventListener('input', debouncedAutoFill);
+        }
+        if (this.elements.aprInput) {
+            this.elements.aprInput.addEventListener('input', debouncedAutoFill);
+        }
+        if (this.elements.monthlyPaymentInput) {
+            // A real keystroke in this field means the user wants to override
+            // the auto-filled value. Programmatic value assignment elsewhere
+            // does not fire 'input', so this only catches genuine user edits.
+            this.elements.monthlyPaymentInput.addEventListener('input', () => {
+                this.hasUserEditedPayment = true;
+            });
+        }
+    },
+
+    /**
+     * Auto-fill the monthly payment field with the estimated card minimum
+     * payment, based on the current balance and APR. Does nothing if either
+     * field is empty/invalid, or if the user has already typed their own
+     * payment amount.
+     */
+    autoFillMinimumPayment: function () {
+        if (this.hasUserEditedPayment) return;
+        if (!this.elements.balanceInput || !this.elements.aprInput || !this.elements.monthlyPaymentInput) return;
+
+        const balance = parseFloat(this.elements.balanceInput.value);
+        const apr = parseFloat(this.elements.aprInput.value);
+
+        if (isNaN(balance) || balance <= 0 || isNaN(apr) || apr <= 0) return;
+
+        const monthlyRate = apr / 12 / 100;
+        const estimatedMinPayment = this.estimateCardMinimumPayment(balance, monthlyRate);
+
+        this.elements.monthlyPaymentInput.value = estimatedMinPayment.toFixed(2);
+        this.validateInput(this.elements.monthlyPaymentInput);
     },
 
     /**
@@ -355,6 +401,9 @@ export const CreditCardCalculator = {
 
         // Clear form
         this.elements.form.reset();
+
+        // Allow auto-fill to populate the payment field again on next entry
+        this.hasUserEditedPayment = false;
 
         // Remove invalid/valid states
         [this.elements.balanceInput, this.elements.aprInput, this.elements.monthlyPaymentInput].forEach(input => {
