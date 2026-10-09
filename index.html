@@ -144,34 +144,34 @@
         <div class="tab-panel" id="panel-mortgage">
             <!-- Mortgage Calculator Form -->
             <form id="mortgageForm" class="mortgage-form">
-                <div class="form-group">
+                <div class="calc-input-group">
                     <label for="principal">Principal Amount ($)</label>
                     <input type="text" id="principal" name="principal" required autocomplete="off" inputmode="numeric"
                         pattern="[0-9,]*" placeholder="e.g., 250,000" maxlength="15">
-                    <span class="input-hint">Loan amount in dollars</span>
+                    <span class="calc-hint">Loan amount in dollars</span>
                 </div>
-                <div class="form-group">
+                <div class="calc-input-group">
                     <label for="interestRate">Annual Interest Rate (%)</label>
                     <!-- XX.xx format, 0.01%-30%; decimal places enforced live
                          in JS since `maxlength` has no effect on
                          type="number" inputs (see Utils.restrictDecimalFormat) -->
                     <input type="number" id="interestRate" name="interestRate" required autocomplete="off" min="0.01"
                         max="30" step="0.01" placeholder="e.g., 4.5">
-                    <span class="input-hint">Annual percentage rate</span>
+                    <span class="calc-hint">Annual percentage rate</span>
                 </div>
-                <div class="form-group">
+                <div class="calc-input-group">
                     <label for="term">Loan Term (Years)</label>
                     <!-- Whole years only, max 2 digits; enforced live in JS
                          (see Utils.restrictToWholeNumber) -->
                     <input type="number" id="term" name="term" required autocomplete="off" min="1" max="50" step="1"
                         placeholder="e.g., 30, 15">
-                    <span class="input-hint">Length of loan in years</span>
+                    <span class="calc-hint">Length of loan in years</span>
                 </div>
-                <div class="button-group">
-                    <button type="button" id="calculateButton" class="calculate-btn">
+                <div class="calc-button-group">
+                    <button type="button" id="calculateButton" class="calc-btn-calculate">
                         Calculate Payment
                     </button>
-                    <button type="button" id="resetButton" class="reset-btn">
+                    <button type="button" id="resetButton" class="calc-btn-reset">
                         Reset Form
                     </button>
                 </div>
@@ -273,20 +273,20 @@
         <div class="tab-panel hidden" id="panel-rent">
             <!-- Rent Calculator Form -->
             <form id="rentForm" class="rent-form">
-                <div class="rent-input-group">
+                <div class="calc-input-group">
                     <label for="rentAmount">Current Rent ($)</label>
                     <!-- Whole dollars only, max 5 digits ($500-$20,000);
                          enforced live in JS since `maxlength` has no effect
                          on type="number" inputs (see Utils.restrictToWholeNumber) -->
                     <input type="number" id="rentAmount" name="rentAmount" required autocomplete="off" min="500"
                         max="20000" step="50" placeholder="e.g., 2500">
-                    <span class="rent-hint">Monthly rent payment</span>
+                    <span class="calc-hint">Monthly rent payment</span>
                 </div>
-                <div class="rent-button-group">
-                    <button type="button" id="calculateRentButton" class="rent-calculate-btn">
+                <div class="calc-button-group">
+                    <button type="button" id="calculateRentButton" class="calc-btn-calculate">
                         Calculate
                     </button>
-                    <button type="button" id="resetRentButton" class="rent-reset-btn">
+                    <button type="button" id="resetRentButton" class="calc-btn-reset">
                         Reset
                     </button>
                 </div>
@@ -345,7 +345,7 @@
                     </div>
                 </div>
 
-                <div class="rent-disclaimer">
+                <div class="calc-disclaimer">
                     <span>* 50-year rates are estimated as 30-year + 0.5%</span>
                     <span class="rate-legend">
                         <span class="live">● Live API Rate</span> |
@@ -358,36 +358,36 @@
         <div class="tab-panel hidden" id="panel-credit">
             <!-- Credit Card Calculator Form -->
             <form id="creditForm" class="credit-form">
-                <div class="credit-input-group">
+                <div class="calc-input-group">
                     <label for="creditBalance">Current Balance ($)</label>
                     <!-- Whole dollars only, up to 6 digits ($999,999 max); enforced
                          live in JS since `maxlength`/decimals have no effect on
                          type="number" inputs (see restrictToWholeNumber()) -->
                     <input type="number" id="creditBalance" name="creditBalance" required autocomplete="off" min="0"
                         max="999999" step="1" placeholder="e.g., 5000">
-                    <span class="credit-hint">Total credit card balance (whole dollars, up to $999,999)</span>
+                    <span class="calc-hint">Total credit card balance (whole dollars, up to $999,999)</span>
                 </div>
-                <div class="credit-input-group">
+                <div class="calc-input-group">
                     <label for="creditAPR">Annual Percentage Rate (APR %)</label>
                     <!-- XX.xx format, 1.25%-29.99%; decimal places enforced live
                          in JS (see restrictAPRFormat()) -->
                     <input type="number" id="creditAPR" name="creditAPR" required autocomplete="off" min="1.25"
                         max="29.99" step="0.01" placeholder="e.g., 18.99">
-                    <span class="credit-hint">Credit card APR (1.25% - 29.99%)</span>
+                    <span class="calc-hint">Credit card APR (1.25% - 29.99%)</span>
                 </div>
-                <div class="credit-input-group">
+                <div class="calc-input-group">
                     <label for="creditMonthlyPayment">Monthly Payment ($)</label>
                     <!-- Whole dollars only, up to 6 digits ($999,999 max); enforced
                          live in JS (see restrictToWholeNumber()) -->
                     <input type="number" id="creditMonthlyPayment" name="creditMonthlyPayment" required
                         autocomplete="off" min="1" max="999999" step="1" placeholder="e.g., 200">
-                    <span class="credit-hint">Amount you'll pay each month (whole dollars, up to $999,999)</span>
+                    <span class="calc-hint">Amount you'll pay each month (whole dollars, up to $999,999)</span>
                 </div>
-                <div class="credit-button-group">
-                    <button type="button" id="calculateCreditButton" class="credit-calculate-btn">
+                <div class="calc-button-group">
+                    <button type="button" id="calculateCreditButton" class="calc-btn-calculate">
                         Calculate Payoff
                     </button>
-                    <button type="button" id="resetCreditButton" class="credit-reset-btn">
+                    <button type="button" id="resetCreditButton" class="calc-btn-reset">
                         Reset
                     </button>
                 </div>
@@ -426,10 +426,10 @@
                     </div>
                 </div>
 
-                <div class="credit-disclaimer">
+                <div class="calc-disclaimer">
                     <span>ℹ️ Typical minimum payment estimated as the greater of (1% of balance + monthly interest) or $25, matching most major card issuers. Your actual card's minimum may differ.</span>
                 </div>
-                <div class="credit-disclaimer">
+                <div class="calc-disclaimer">
                     <span>⚠️ This assumes fixed monthly payments with no additional charges</span>
                 </div>
 

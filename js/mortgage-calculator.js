@@ -146,11 +146,16 @@ export const MortgageCalculator = {
             form.reset();
         }
 
-        // Clear validation classes
-        const inputs = document.querySelectorAll('.form-group input');
-        inputs.forEach(input => {
-            input.classList.remove('valid', 'invalid');
-        });
+        // Clear validation classes. Scoped to this form specifically - since
+        // .calc-input-group is now shared across all three calculator tabs,
+        // an unscoped document.querySelectorAll() here would incorrectly
+        // also clear valid/invalid state on the Rent and Credit Card forms.
+        if (form) {
+            const inputs = form.querySelectorAll('.calc-input-group input');
+            inputs.forEach(input => {
+                input.classList.remove('valid', 'invalid');
+            });
+        }
 
         UIManager.showMortgagePlaceholders();
         UIManager.hideMessage();

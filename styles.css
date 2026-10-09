@@ -20,6 +20,50 @@
 
 }
 
+/* ===============================================
+   Per-Tab Theme Variables
+   All three calculator tabs share one set of form/button/hint
+   classes (.calc-input-group, .calc-btn-calculate, etc. - see
+   "Shared Calculator Form Styles" below). Only the accent colors
+   differ per tab, so those are scoped here as custom properties
+   rather than duplicating the full rule set three times.
+   =============================================== */
+#panel-mortgage {
+    --calc-input-border: var(--border-color);
+    --calc-focus-color: var(--accent-blue);
+    --calc-focus-shadow-rgb: 102, 126, 234;
+    --calc-btn-calculate-bg: var(--accent-blue);
+    --calc-btn-calculate-hover: #5a67d8;
+    --calc-btn-reset-bg: #6b7280;
+    --calc-btn-reset-hover: #4b5563;
+    --calc-btn-reset-border: transparent;
+    --calc-disclaimer-border: rgba(102, 126, 234, 0.1);
+}
+
+#panel-rent {
+    --calc-input-border: rgba(251, 146, 60, 0.2);
+    --calc-focus-color: #ea580c;
+    --calc-focus-shadow-rgb: 251, 146, 60;
+    --calc-btn-calculate-bg: var(--accent-green);
+    --calc-btn-calculate-hover: var(--hover-green);
+    --calc-btn-reset-bg: var(--primary-blue);
+    --calc-btn-reset-hover: var(--hover-blue);
+    --calc-btn-reset-border: rgba(251, 146, 60, 0.3);
+    --calc-disclaimer-border: rgba(251, 146, 60, 0.1);
+}
+
+#panel-credit {
+    --calc-input-border: rgba(239, 68, 68, 0.2);
+    --calc-focus-color: #dc2626;
+    --calc-focus-shadow-rgb: 239, 68, 68;
+    --calc-btn-calculate-bg: var(--accent-green);
+    --calc-btn-calculate-hover: var(--hover-green);
+    --calc-btn-reset-bg: var(--primary-blue);
+    --calc-btn-reset-hover: var(--hover-blue);
+    --calc-btn-reset-border: rgba(239, 68, 68, 0.3);
+    --calc-disclaimer-border: rgba(239, 68, 68, 0.1);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -228,11 +272,19 @@ body {
     margin-bottom: 20px;
 }
 
-.form-group {
+/* ===============================================
+   Shared Calculator Form Styles
+   Used by all three tabs (Mortgage, Rent, Credit Card) - each form is
+   structurally identical (label + input + hint, calculate/reset button
+   pair). Per-tab accent colors come from the custom properties scoped to
+   #panel-mortgage / #panel-rent / #panel-credit above, so the rules here
+   are written once instead of being triplicated per tab.
+   =============================================== */
+.calc-input-group {
     margin-bottom: 16px;
 }
 
-.form-group label {
+.calc-input-group label {
     display: block;
     margin-bottom: 6px;
     font-weight: 600;
@@ -240,14 +292,15 @@ body {
     font-size: 0.9rem;
 }
 
-.form-group input {
+.calc-input-group input {
     width: 100%;
     padding: 10px 12px;
-    border: 2px solid var(--border-color);
+    border: 2px solid var(--calc-input-border);
     border-radius: 6px;
     font-size: 0.95rem;
-    transition: all 0.3s ease;
     background: white;
+    transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
 }
 
 /* Size inputs to their actual expected content instead of stretching to
@@ -270,23 +323,39 @@ body {
     max-width: 100%;
 }
 
-.form-group input:focus {
-    outline: none;
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+#rentAmount {
+    width: 9ch;
+    max-width: 100%;
 }
 
-.form-group input.valid {
+#creditBalance,
+#creditMonthlyPayment {
+    width: 10ch;
+    max-width: 100%;
+}
+
+#creditAPR {
+    width: 9ch;
+    max-width: 100%;
+}
+
+.calc-input-group input:focus {
+    outline: none;
+    border-color: var(--calc-focus-color);
+    box-shadow: 0 0 0 3px rgba(var(--calc-focus-shadow-rgb), 0.1);
+}
+
+.calc-input-group input.valid {
     border-color: var(--accent-green);
     background: rgba(16, 185, 129, 0.05);
 }
 
-.form-group input.invalid {
+.calc-input-group input.invalid {
     border-color: var(--accent-red);
     background: rgba(239, 68, 68, 0.05);
 }
 
-.input-hint {
+.calc-hint {
     display: block;
     font-size: 0.8rem;
     color: var(--text-secondary);
@@ -295,10 +364,10 @@ body {
 }
 
 /* Button Styles */
-.button-group {
+.calc-button-group {
     display: flex;
     gap: 10px;
-    margin-top: 20px;
+    margin: 16px 0;
 }
 
 button {
@@ -312,30 +381,48 @@ button {
     flex: 1;
 }
 
-.calculate-btn {
-    background: var(--accent-blue);
+.calc-btn-calculate,
+.calc-btn-reset {
+    padding: 10px 16px;
+    text-align: center;
+}
+
+.calc-btn-calculate {
+    background: var(--calc-btn-calculate-bg);
     color: white;
 }
 
-.calculate-btn:hover {
-    background: #5a67d8;
+.calc-btn-calculate:hover {
+    background: var(--calc-btn-calculate-hover);
     transform: translateY(-1px);
     box-shadow: var(--shadow-medium);
 }
 
-.reset-btn {
-    background: #6b7280;
+.calc-btn-reset {
+    background: var(--calc-btn-reset-bg);
     color: white;
+    border: 1px solid var(--calc-btn-reset-border);
 }
 
-.reset-btn:hover {
-    background: #4b5563;
+.calc-btn-reset:hover {
+    background: var(--calc-btn-reset-hover);
     transform: translateY(-1px);
 }
 
 button:focus {
     outline: 2px solid rgba(102, 126, 234, 0.3);
     outline-offset: 2px;
+}
+
+.calc-disclaimer {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--calc-disclaimer-border);
+    line-height: 1.3;
 }
 
 /* Result Display */
@@ -596,102 +683,6 @@ button:focus {
     margin-bottom: 16px;
 }
 
-.rent-input-group {
-    margin-bottom: 16px;
-}
-
-.rent-input-group label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 6px;
-}
-
-.rent-input-group input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 2px solid rgba(251, 146, 60, 0.2);
-    border-radius: 6px;
-    font-size: 0.95rem;
-    background: white;
-    transition: all 0.2s ease;
-    box-sizing: border-box;
-}
-
-/* Size to the enforced 5-digit max ($20,000) instead of the full container
-   width - see Utils.restrictToWholeNumber in rent-calculator.js */
-#rentAmount {
-    width: 9ch;
-    max-width: 100%;
-}
-
-.rent-input-group input:focus {
-    outline: none;
-    border-color: #ea580c;
-    box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.1);
-}
-
-.rent-input-group input.valid {
-    border-color: var(--accent-green);
-    background: rgba(16, 185, 129, 0.05);
-}
-
-.rent-input-group input.invalid {
-    border-color: var(--accent-red);
-    background: rgba(239, 68, 68, 0.05);
-}
-
-.rent-hint {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--white-bro);
-    margin-top: 3px;
-    font-style: italic;
-}
-
-/* Rent Button Group */
-.rent-button-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-}
-
-.rent-calculate-btn,
-.rent-reset-btn {
-    padding: 10px 16px;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    flex: 1;
-}
-
-.rent-calculate-btn {
-    background: var(--accent-green);
-    color: white;
-}
-
-.rent-calculate-btn:hover {
-    background: var(--hover-green);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-medium);
-}
-
-.rent-reset-btn {
-    background: var(--primary-blue);
-    color: var(--white-bro);
-    border: 1px solid rgba(251, 146, 60, 0.3);
-}
-
-.rent-reset-btn:hover {
-    background: var(--hover-blue);
-    transform: translateY(-1px);
-}
-
 /* Rent Results - Multiple Terms */
 .rent-result {
     background: white;
@@ -820,18 +811,7 @@ button:focus {
 }
 
 /* Disclaimer */
-.rent-disclaimer {
-    text-align: center;
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    font-style: italic;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(251, 146, 60, 0.1);
-    line-height: 1.3;
-}
-
-.rent-disclaimer .rate-legend {
+.calc-disclaimer .rate-legend {
     display: block;
     margin-top: 4px;
     font-size: 0.65rem;
@@ -1292,6 +1272,20 @@ button:focus {
         width: 100%;
         text-align: center;
     }
+
+    /* Payment breakdown chart (credit card calculator) */
+    .chart-row {
+        grid-template-columns: 120px 1fr 70px;
+        gap: 8px;
+    }
+
+    .chart-label {
+        font-size: 0.8rem;
+    }
+
+    .chart-value {
+        font-size: 0.8rem;
+    }
 }
 
 /* Responsive Design */
@@ -1308,6 +1302,45 @@ button:focus {
 
     .rates-inline {
         justify-content: center;
+    }
+
+    /* Ensure minimum 44x44px touch targets per Apple HIG */
+    .calc-btn-calculate,
+    .calc-btn-reset,
+    .info-icon,
+    .refresh-btn-compact {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 12px 20px;
+        touch-action: manipulation;
+        /* Disable double-tap zoom */
+    }
+
+    /* Larger refresh button on mobile */
+    .refresh-btn-compact {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        max-width: 32px;
+    }
+
+    .refresh-btn-compact svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* Larger tap targets for tabs */
+    .tab-btn {
+        min-height: 44px;
+        padding: 12px 16px;
+    }
+
+    /* Increase input height for easier tapping */
+    .calc-input-group input {
+        min-height: 44px;
+        padding: 12px;
+        font-size: 16px;
+        /* Prevents iOS auto-zoom */
     }
 }
 
@@ -1387,48 +1420,33 @@ button:focus {
         padding: 12px;
     }
 
-    .form-group,
-    .rent-input-group,
-    .credit-input-group {
+    .calc-input-group {
         margin-bottom: 12px;
     }
 
-    .form-group label,
-    .rent-input-group label,
-    .credit-input-group label {
+    .calc-input-group label {
         font-size: 0.85rem;
         margin-bottom: 4px;
     }
 
-    .form-group input,
-    .form-group select,
-    .rent-input-group input,
-    .credit-input-group input {
+    .calc-input-group input {
         padding: 8px 10px;
         font-size: 0.9rem;
     }
 
-    .hint,
-    .rent-hint,
-    .credit-hint {
+    .calc-hint {
         font-size: 0.7rem;
         margin-top: 2px;
     }
 
     /* Compact buttons */
-    .button-group,
-    .rent-button-group,
-    .credit-button-group {
+    .calc-button-group {
         gap: 8px;
-        margin-bottom: 12px;
+        margin: 12px 0;
     }
 
-    .calculate-btn,
-    .reset-btn,
-    .rent-calculate-btn,
-    .rent-reset-btn,
-    .credit-calculate-btn,
-    .credit-reset-btn {
+    .calc-btn-calculate,
+    .calc-btn-reset {
         padding: 8px 12px;
         font-size: 0.85rem;
     }
@@ -1581,9 +1599,7 @@ button:focus {
     }
 
     /* Reduce spacing between elements */
-    .disclaimer,
-    .rent-disclaimer,
-    .credit-disclaimer {
+    .calc-disclaimer {
         font-size: 0.65rem;
         margin-top: 6px;
         padding-top: 6px;
@@ -1708,14 +1724,22 @@ button:focus {
 /* Print styles */
 @media print {
 
-    .button-group,
+    .main-header,
+    .mortgage-rates,
+    .calculator-tabs,
+    button {
+        display: none;
+    }
+
+    .calc-button-group,
     .info-icon,
-    .refresh-btn-compact,
-    .mortgage-rates {
+    .refresh-btn-compact {
         display: none !important;
     }
 
-    .result {
+    .result,
+    .rent-result,
+    .credit-result {
         page-break-inside: avoid;
         border: 2px solid #000;
     }
@@ -1733,109 +1757,6 @@ button:focus {
 /* Credit Card Form Styling */
 .credit-form {
     margin-bottom: 16px;
-}
-
-.credit-input-group {
-    margin-bottom: 16px;
-}
-
-.credit-input-group label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 6px;
-}
-
-.credit-input-group input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 2px solid rgba(239, 68, 68, 0.2);
-    border-radius: 6px;
-    font-size: 0.95rem;
-    background: white;
-    transition: all 0.2s ease;
-    box-sizing: border-box;
-}
-
-/* Size each field to its enforced max length instead of the full container
-   width - see Utils.restrictToWholeNumber / Utils.restrictDecimalFormat in
-   credit-card-calculator.js */
-#creditBalance,
-#creditMonthlyPayment {
-    width: 10ch;
-    max-width: 100%;
-}
-
-#creditAPR {
-    width: 9ch;
-    max-width: 100%;
-}
-
-.credit-input-group input:focus {
-    outline: none;
-    border-color: #dc2626;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-}
-
-.credit-input-group input.valid {
-    border-color: var(--accent-green);
-    background: rgba(16, 185, 129, 0.05);
-}
-
-.credit-input-group input.invalid {
-    border-color: var(--accent-red);
-    background: rgba(239, 68, 68, 0.05);
-}
-
-.credit-hint {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--white-bro);
-    margin-top: 3px;
-    font-style: italic;
-}
-
-/* Credit Card Button Group */
-.credit-button-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-}
-
-.credit-calculate-btn,
-.credit-reset-btn {
-    padding: 10px 16px;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    flex: 1;
-}
-
-.credit-calculate-btn {
-    background: var(--accent-green);
-    color: white;
-}
-
-.credit-calculate-btn:hover {
-    background: var(--hover-green);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-medium);
-}
-
-.credit-reset-btn {
-    background: var(--primary-blue);
-    color: var(--white-bro);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.credit-reset-btn:hover {
-    background: var(--hover-blue);
-    transform: translateY(-1px);
 }
 
 /* Credit Card Results */
@@ -1936,18 +1857,6 @@ button:focus {
 .credit-result-item.initial-balance .credit-result-value {
     font-size: 0.95rem;
     font-weight: 700;
-}
-
-/* Credit Card Disclaimer */
-.credit-disclaimer {
-    text-align: center;
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    font-style: italic;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(239, 68, 68, 0.1);
-    line-height: 1.3;
 }
 
 /* Payment Breakdown Chart */
@@ -2060,38 +1969,18 @@ button:focus {
     color: #dc2626;
 }
 
-/* Responsive adjustments for payment breakdown */
-@media (max-width: 600px) {
-    .chart-row {
-        grid-template-columns: 120px 1fr 70px;
-        gap: 8px;
-    }
-
-    .chart-label {
-        font-size: 0.8rem;
-    }
-
-    .chart-value {
-        font-size: 0.8rem;
-    }
-}
-
 /* ============================================================================
    LOADING STATES - Added for Phase 5 enhancements
    ============================================================================ */
 
 /* Loading button state */
-.calculate-btn.loading,
-.rent-calculate-btn.loading,
-.credit-calculate-btn.loading {
+.calc-btn-calculate.loading {
     position: relative;
     color: transparent !important;
     pointer-events: none;
 }
 
-.calculate-btn.loading::after,
-.rent-calculate-btn.loading::after,
-.credit-calculate-btn.loading::after {
+.calc-btn-calculate.loading::after {
     content: "";
     position: absolute;
     width: 16px;
@@ -2129,66 +2018,8 @@ button:focus {
 }
 
 /* ============================================================================
-   MOBILE TOUCH TARGETS - Enhanced for Better UX
-   ============================================================================ */
-
-@media (max-width: 768px) {
-
-    /* Ensure minimum 44x44px touch targets per Apple HIG */
-    .calculate-btn,
-    .reset-btn,
-    .rent-calculate-btn,
-    .rent-reset-btn,
-    .credit-calculate-btn,
-    .credit-reset-btn,
-    .info-icon,
-    .refresh-btn-compact {
-        min-width: 44px;
-        min-height: 44px;
-        padding: 12px 20px;
-        touch-action: manipulation;
-        /* Disable double-tap zoom */
-    }
-
-    /* Larger refresh button on mobile */
-    .refresh-btn-compact {
-        width: 32px;
-        height: 32px;
-        min-width: 32px;
-        max-width: 32px;
-    }
-
-    .refresh-btn-compact svg {
-        width: 16px;
-        height: 16px;
-    }
-
-    /* Larger tap targets for tabs */
-    .tab-btn {
-        min-height: 44px;
-        padding: 12px 16px;
-    }
-
-    /* Increase input height for easier tapping */
-    .form-group input,
-    .rent-input-group input,
-    .credit-input-group input {
-        min-height: 44px;
-        padding: 12px;
-        font-size: 16px;
-        /* Prevents iOS auto-zoom */
-    }
-}
-
-/* ============================================================================
    SMOOTH TRANSITIONS FOR ERROR STATES
    ============================================================================ */
-
-.form-group input,
-.rent-input-group input,
-.credit-input-group input {
-    transition: border-color 0.3s ease, background-color 0.3s ease;
-}
 
 .message {
     transition: opacity 0.3s ease;
@@ -2212,24 +2043,4 @@ input:focus-visible,
 select:focus-visible {
     outline: 2px solid var(--accent-blue);
     outline-offset: 2px;
-}
-
-/* ============================================================================
-   PRINT STYLES
-   ============================================================================ */
-
-@media print {
-
-    .main-header,
-    .mortgage-rates,
-    .calculator-tabs,
-    button {
-        display: none;
-    }
-
-    .result,
-    .rent-result,
-    .credit-result {
-        page-break-inside: avoid;
-    }
 }
