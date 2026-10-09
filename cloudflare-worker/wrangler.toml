@@ -1,0 +1,6 @@
+name = "mortgage-rates-proxy"
+main = "mortgage-rates-proxy.js"
+compatibility_date = "2024-01-01"
+
+# Set the real secret after creating the worker (never commit it):
+#   npx wrangler secret put FRED_API_KEY

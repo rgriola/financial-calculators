@@ -11,12 +11,17 @@
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
 
     <!-- 🔧 DEVELOPMENT CSP - Allows Live Server hot-reload and ES6 modules -->
+    <!-- connect-src allows the mortgage-rates Cloudflare Worker proxy
+         (cloudflare-worker/mortgage-rates-proxy.js). -->
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.api-ninjas.com ws: wss:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
-    <!-- Note: ES6 modules work with 'self' in script-src -->
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://mortgage-rates-proxy.fredmortgage.workers.dev ws: wss:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <!-- Note: style-src keeps 'unsafe-inline' because the credit card payoff
+         chart bars set width via JS (element.style.width). script-src does not
+         need 'unsafe-inline' - there are no inline <script> blocks or
+         on*= handlers anywhere in this app. -->
 
     <!-- 🚀 PRODUCTION CSP - Use this for GitHub Pages (comment out development CSP above)
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.api-ninjas.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://mortgage-rates-proxy.fredmortgage.workers.dev; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
     -->
 
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -456,7 +461,6 @@
     <script src="js/loan-limits-data.js"></script>
     <script src="js/loan-limits.js"></script>
     <script src="js/location-search.js"></script>
-    <script src="js/storage-manager.js"></script>
     <!-- Main app entry point - ES6 module (imports analytics and mortgage-rates) -->
     <script type="module" src="js/app.js"></script>
 </body>

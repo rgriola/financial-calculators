@@ -60,22 +60,6 @@ const LoanLimitService = {
     // Get year of data
     getDataYear: function() {
         return LoanLimitsData.year;
-    },
-
-    // Format loan type for display
-    formatLoanTypeDisplay: function(loanTypeInfo) {
-        const { isConforming, loanType, limit, principal, difference } = loanTypeInfo;
-        
-        let message = `${loanType} Loan`;
-        
-        if (isConforming) {
-            const remaining = limit - principal;
-            message += ` (${SecurityUtils.formatCurrency(remaining)} below limit)`;
-        } else {
-            message += ` (${SecurityUtils.formatCurrency(Math.abs(difference))} above limit)`;
-        }
-        
-        return message;
     }
 };
 

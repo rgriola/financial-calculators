@@ -11,6 +11,10 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Cloudflare Worker secrets/local dev state
+cloudflare-worker/.dev.vars
+cloudflare-worker/.wrangler/
+
 # IDE files
 .vscode/
 .idea/
@@ -45,6 +49,8 @@ coverage/
 dist/
 build/
 out/
+
+key.md 
 
 # Cache
 .cache/

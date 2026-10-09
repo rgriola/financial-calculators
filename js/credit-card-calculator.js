@@ -4,7 +4,7 @@
  * @module credit-card-calculator
  */
 
-import { AppConfig, ErrorHandler, ValidationConfig } from './config.js';
+import { AppConfig, ErrorHandler, ValidationConfig, RateDefaults } from './config.js';
 import { Utils } from './utils.js';
 import { UIManager } from './ui-manager.js';
 
@@ -226,7 +226,7 @@ export const CreditCardCalculator = {
         let remainingBalance = balance;
         let totalPaid = 0;
         let months = 0;
-        const maxMonths = ValidationConfig.maxAmortizationMonths || 600; // 50 years max
+        const maxMonths = RateDefaults.maxAmortizationMonths || 600; // 50 years max
 
         AppConfig.performance.start('creditCardCalculation');
 
