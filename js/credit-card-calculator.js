@@ -205,7 +205,7 @@ export const CreditCardCalculator = {
         AppConfig.log('info', 'Calculation result', result);
 
         // Display results
-        this.displayResults(result, monthlyInterestRate * 100, balance, monthlyPayment);
+        this.displayResults(result, monthlyInterestRate * 100, balance, monthlyPayment, apr);
 
         // Show results section
         this.elements.resultDiv.style.display = 'block';
@@ -263,8 +263,9 @@ export const CreditCardCalculator = {
      * @param {number} monthlyRatePercent - Monthly interest rate as percentage
      * @param {number} initialBalance - The original balance
      * @param {number} monthlyPayment - The fixed monthly payment
+     * @param {number} apr - The annual percentage rate as entered by the user
      */
-    displayResults: function (result, monthlyRatePercent, initialBalance, monthlyPayment) {
+    displayResults: function (result, monthlyRatePercent, initialBalance, monthlyPayment, apr) {
         // Format payoff time
         const years = Math.floor(result.months / 12);
         const remainingMonths = result.months % 12;
@@ -289,7 +290,7 @@ export const CreditCardCalculator = {
         this.elements.payoffTime.textContent = payoffText;
         this.elements.totalInterest.textContent = '$' + Utils.formatCurrency(result.totalInterest);
         this.elements.totalAmount.textContent = '$' + Utils.formatCurrency(result.totalPaid);
-        this.elements.monthlyRate.textContent = `${monthlyRatePercent.toFixed(4)}%`;
+        this.elements.monthlyRate.textContent = `${monthlyRatePercent.toFixed(4)}% (${apr.toFixed(2)}% APR)`;
 
         // Remove placeholder class
         this.elements.payoffTime.classList.remove('placeholder');
