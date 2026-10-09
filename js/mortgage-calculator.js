@@ -205,6 +205,14 @@ export const MortgageCalculator = {
                     input.addEventListener('input', () => {
                         this.formatPrincipalInput(input);
                     });
+                } else if (inputId === 'interestRate') {
+                    // XX.xx format, matching the 0.01%-30% range. See
+                    // Utils.restrictDecimalFormat for why this is needed in
+                    // JS rather than via HTML attributes.
+                    input.addEventListener('input', () => Utils.restrictDecimalFormat(input, 2, 2));
+                } else if (inputId === 'term') {
+                    // Whole years only, max 2 digits (matches the 50-year cap)
+                    input.addEventListener('input', () => Utils.restrictToWholeNumber(input, 2));
                 }
 
                 // Debounced validation
@@ -247,7 +255,17 @@ export const MortgageCalculator = {
         const oldValue = input.value;
 
         // Format the value with commas
-        const formatted = Utils.formatNumberWithCommas(oldValue);
+        let formatted = Utils.formatNumberWithCommas(oldValue);
+
+        // Cap the integer portion to 8 digits (matches the $10,000,000 max).
+        // formatNumberWithCommas only normalizes format/decimals; it doesn't
+        // enforce a maximum digit count on its own.
+        const [intPartFormatted, decPartFormatted] = formatted.split('.');
+        const intDigitsOnly = (intPartFormatted || '').replace(/,/g, '');
+        if (intDigitsOnly.length > 8) {
+            const cappedIntDigits = intDigitsOnly.slice(0, 8).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            formatted = decPartFormatted !== undefined ? `${cappedIntDigits}.${decPartFormatted}` : cappedIntDigits;
+        }
 
         AppConfig.log('debug', 'Formatting principal', {
             oldValue,

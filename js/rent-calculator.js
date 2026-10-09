@@ -346,6 +346,9 @@ export const RentCalculator = {
         // Add input validation for rent amount with debouncing
         const rentInput = document.getElementById('rentAmount');
         if (rentInput) {
+            // Whole dollars only, max 5 digits (matches the $20,000 cap)
+            rentInput.addEventListener('input', () => Utils.restrictToWholeNumber(rentInput, 5));
+
             const debouncedValidate = Utils.debounce(() => {
                 this.validateInput(rentInput);
             }, AppConfig.ui.debounceDelay);

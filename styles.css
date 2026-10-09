@@ -267,6 +267,26 @@ body {
     background: white;
 }
 
+/* Size inputs to their actual expected content instead of stretching to
+   the full container width. Widths are in `ch` (character) units, sized
+   to each field's enforced max length (see Utils.restrictToWholeNumber /
+   Utils.restrictDecimalFormat in the JS modules) plus room for the native
+   number spinner arrows where applicable. */
+#principal {
+    width: 14ch;
+    max-width: 100%;
+}
+
+#interestRate {
+    width: 8ch;
+    max-width: 100%;
+}
+
+#term {
+    width: 6ch;
+    max-width: 100%;
+}
+
 .form-group input:focus {
     outline: none;
     border-color: var(--accent-blue);
@@ -646,6 +666,13 @@ button:focus {
     background: white;
     transition: all 0.2s ease;
     box-sizing: border-box;
+}
+
+/* Size to the enforced 5-digit max ($20,000) instead of the full container
+   width - see Utils.restrictToWholeNumber in rent-calculator.js */
+#rentAmount {
+    width: 9ch;
+    max-width: 100%;
 }
 
 .rent-input-group input:focus {
@@ -1873,6 +1900,20 @@ button:focus {
     background: white;
     transition: all 0.2s ease;
     box-sizing: border-box;
+}
+
+/* Size each field to its enforced max length instead of the full container
+   width - see Utils.restrictToWholeNumber / Utils.restrictDecimalFormat in
+   credit-card-calculator.js */
+#creditBalance,
+#creditMonthlyPayment {
+    width: 10ch;
+    max-width: 100%;
+}
+
+#creditAPR {
+    width: 9ch;
+    max-width: 100%;
 }
 
 .credit-input-group input:focus {

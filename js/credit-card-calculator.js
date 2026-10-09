@@ -95,19 +95,18 @@ export const CreditCardCalculator = {
             }
         });
 
-        // Live input format restrictions, since `maxlength` and decimal
-        // restrictions have no effect on <input type="number"> in any
-        // browser - these must be enforced in JS on every keystroke.
+        // Live input format restrictions (see Utils.restrictToWholeNumber /
+        // Utils.restrictDecimalFormat for why this must be enforced in JS).
         // Registered before validation/auto-fill listeners so those always
         // read the already-sanitized value.
         if (this.elements.balanceInput) {
-            this.elements.balanceInput.addEventListener('input', () => this.restrictToWholeNumber(this.elements.balanceInput, 6));
+            this.elements.balanceInput.addEventListener('input', () => Utils.restrictToWholeNumber(this.elements.balanceInput, 6));
         }
         if (this.elements.aprInput) {
-            this.elements.aprInput.addEventListener('input', () => this.restrictAPRFormat(this.elements.aprInput));
+            this.elements.aprInput.addEventListener('input', () => Utils.restrictDecimalFormat(this.elements.aprInput, 2, 2));
         }
         if (this.elements.monthlyPaymentInput) {
-            this.elements.monthlyPaymentInput.addEventListener('input', () => this.restrictToWholeNumber(this.elements.monthlyPaymentInput, 6));
+            this.elements.monthlyPaymentInput.addEventListener('input', () => Utils.restrictToWholeNumber(this.elements.monthlyPaymentInput, 6));
         }
 
         // Real-time validation with debouncing
@@ -143,47 +142,6 @@ export const CreditCardCalculator = {
             this.elements.monthlyPaymentInput.addEventListener('input', () => {
                 this.hasUserEditedPayment = true;
             });
-        }
-    },
-
-    /**
-     * Strip any non-digit characters (decimal points, signs, letters) and
-     * cap the result to maxDigits characters, enforcing whole-number-only
-     * input with a fixed maximum length in real time.
-     * @param {HTMLInputElement} input - Input element to restrict
-     * @param {number} maxDigits - Maximum number of digits allowed
-     */
-    restrictToWholeNumber: function (input, maxDigits) {
-        if (!input) return;
-        let digitsOnly = input.value.replace(/[^\d]/g, '').slice(0, maxDigits);
-        if (input.value !== digitsOnly) {
-            input.value = digitsOnly;
-        }
-    },
-
-    /**
-     * Restrict an APR input to the XX.xx format in real time: digits only,
-     * a single decimal point, at most 2 integer digits and 2 decimal digits.
-     * @param {HTMLInputElement} input - Input element to restrict
-     */
-    restrictAPRFormat: function (input) {
-        if (!input) return;
-
-        let value = input.value.replace(/[^\d.]/g, '');
-
-        // Collapse multiple decimal points down to the first one
-        const firstDotIndex = value.indexOf('.');
-        if (firstDotIndex !== -1) {
-            value = value.slice(0, firstDotIndex + 1) + value.slice(firstDotIndex + 1).replace(/\./g, '');
-        }
-
-        let [intPart, decPart] = value.split('.');
-        intPart = (intPart || '').slice(0, 2);
-        const hasDot = value.includes('.');
-        const restricted = hasDot ? `${intPart}.${(decPart || '').slice(0, 2)}` : intPart;
-
-        if (input.value !== restricted) {
-            input.value = restricted;
         }
     },
 

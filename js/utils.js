@@ -127,6 +127,58 @@ export const Utils = {
     },
 
     /**
+     * Restrict an input element to whole-number digits only, capped to a
+     * maximum digit count, enforced live on every keystroke. Needed because
+     * neither `maxlength` nor decimal restriction work on
+     * `<input type="number">` in any browser - only `type="text"` honors
+     * `maxlength`, and `type="number"` never blocks typed characters based
+     * on `step`/`min`/`max` (those only affect native validity state).
+     * @param {HTMLInputElement} input - Input element to restrict
+     * @param {number} maxDigits - Maximum number of digits allowed
+     * @example
+     * input.addEventListener('input', () => Utils.restrictToWholeNumber(input, 6));
+     */
+    restrictToWholeNumber: function (input, maxDigits) {
+        if (!input) return;
+        const digitsOnly = input.value.replace(/[^\d]/g, '').slice(0, maxDigits);
+        if (input.value !== digitsOnly) {
+            input.value = digitsOnly;
+        }
+    },
+
+    /**
+     * Restrict an input element to a fixed decimal format (e.g. XX.xx) in
+     * real time: digits only, a single decimal point, capped integer and
+     * decimal digit counts. See restrictToWholeNumber() for why this must
+     * be enforced in JS rather than via HTML attributes.
+     * @param {HTMLInputElement} input - Input element to restrict
+     * @param {number} maxIntDigits - Maximum digits allowed before the decimal point
+     * @param {number} maxDecimalDigits - Maximum digits allowed after the decimal point
+     * @example
+     * input.addEventListener('input', () => Utils.restrictDecimalFormat(input, 2, 2));
+     */
+    restrictDecimalFormat: function (input, maxIntDigits, maxDecimalDigits) {
+        if (!input) return;
+
+        let value = input.value.replace(/[^\d.]/g, '');
+
+        // Collapse multiple decimal points down to the first one
+        const firstDotIndex = value.indexOf('.');
+        if (firstDotIndex !== -1) {
+            value = value.slice(0, firstDotIndex + 1) + value.slice(firstDotIndex + 1).replace(/\./g, '');
+        }
+
+        let [intPart, decPart] = value.split('.');
+        intPart = (intPart || '').slice(0, maxIntDigits);
+        const hasDot = value.includes('.');
+        const restricted = hasDot ? `${intPart}.${(decPart || '').slice(0, maxDecimalDigits)}` : intPart;
+
+        if (input.value !== restricted) {
+            input.value = restricted;
+        }
+    },
+
+    /**
      * Format percentage
      * @param {number} value - Decimal value (e.g., 0.045 for 4.5%)
      * @param {number} decimals - Number of decimal places (default: 2)
