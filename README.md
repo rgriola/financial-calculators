@@ -1,13 +1,13 @@
 # Financial Calculators
 
-A secure, responsive financial calculator application built with vanilla JavaScript, HTML, and CSS. Features mortgage payment calculations and rent-to-mortgage comparisons with real-time mortgage rate data from API Ninjas.
+A secure, responsive financial calculator application built with vanilla JavaScript, HTML, and CSS. Features mortgage payment calculations and rent-to-mortgage comparisons with real-time mortgage rate data from FRED (Federal Reserve Economic Data), served through a Cloudflare Worker proxy so no API key is ever exposed to the browser.
 
 ## 🏠 Mortgage Calculator Features
 
 - **Secure Implementation** - Follows CSP compliance and security best practices
 - **Real-time Validation** - Input validation with visual feedback
 - **Interactive Info Tooltips** - Educational content about mortgage terms
-- **Live Mortgage Rates** - Current 30-year and 15-year fixed rates via API
+- **Live Mortgage Rates** - Current 30-year and 15-year fixed rates from FRED via a secure Cloudflare Worker proxy
 - **Conforming vs Jumbo Detection** - Automatic loan type classification based on FHFA 2026 limits
 - **County-Specific Limits** - Select property location to get accurate loan limits
 - **Responsive Design** - Works on desktop, tablet, and mobile
@@ -16,7 +16,7 @@ A secure, responsive financial calculator application built with vanilla JavaScr
 ## 💰 Rent-to-Mortgage Calculator Features
 
 - **Multi-Term Comparison** - 15-year, 30-year, and 50-year loan options
-- **Live Rate Integration** - Uses current mortgage rates from API
+- **Live Rate Integration** - Uses current mortgage rates from FRED via the Cloudflare Worker proxy
 - **Reverse Calculation** - Determines affordable mortgage from rent payment
 - **Total Interest Display** - Shows lifetime interest costs for each term
 - **Sticky Panel Design** - Always visible while scrolling
@@ -84,12 +84,17 @@ financial-calculators/
 │   ├── mortgage-calculator.js   # Core mortgage calculation logic
 │   ├── rent-calculator.js       # Rent-to-mortgage calculations
 │   ├── credit-card-calculator.js # Credit card payoff calculator
-│   ├── mortgage-rates.js        # API service for live mortgage rates
+│   ├── mortgage-rates.js        # Client for the mortgage-rates Cloudflare Worker proxy
 │   ├── loan-limits-data.js      # 2026 FHFA loan limits data
 │   ├── loan-limits.js           # Loan limit calculation logic
 │   ├── location-search.js       # Property location search
-│   ├── storage-manager.js       # Local storage management
 │   └── analytics.js             # Analytics tracking
+├── cloudflare-worker/            # Serverless proxy for live mortgage rates
+│   ├── mortgage-rates-proxy.js  # Fetches FRED data server-side (hides the API key)
+│   └── wrangler.toml            # Cloudflare Worker configuration
+├── .github/workflows/            # CI/CD automation
+│   ├── ci.yml                   # JS syntax checks + secret scanning (gitleaks)
+│   └── deploy-cloudflare-worker.yml # Auto-deploys the Worker on changes
 ├── README.md                    # Project documentation
 ├── .gitignore                   # Git ignore rules
 └── LICENSE (optional)           # MIT License
@@ -97,13 +102,14 @@ financial-calculators/
 
 ## 🔒 Security Features
 
-- **Content Security Policy (CSP)** - Prevents XSS attacks
+- **Content Security Policy (CSP)** - Prevents XSS attacks; `script-src` allows no inline/`unsafe-inline` scripts
 - **ES6 Module Architecture** - Modern, secure module loading
 - **Centralized Error Handling** - Consistent error management across all modules
 - **Modular Architecture** - Separation of concerns for security
 - **Input Sanitization** - All user inputs are validated and sanitized
-- **HTML Injection Prevention** - No innerHTML usage, textContent only
-- **API Key Security** - Secure API communication with rate limiting
+- **HTML Injection Prevention** - User-supplied text is rendered via `textContent` only; `innerHTML` is used only for static, app-controlled data (e.g. state/county dropdown options), never raw user input
+- **No Client-Side API Keys** - The FRED mortgage rate API key lives only in a Cloudflare Worker secret; it is never present in browser-delivered code or git history
+- **Automated Secret Scanning** - Every push/PR is scanned with gitleaks to catch accidentally committed credentials
 - **Validation Boundaries** - Strict input limits and type checking
 - **Debounced Validation** - Prevents excessive validation calls
 
@@ -128,12 +134,27 @@ financial-calculators/
 ## 🔧 Configuration
 
 ### API Configuration
-The mortgage rates are fetched from API Ninjas. The service includes:
-- Automatic caching (1-hour duration)
+Mortgage rates are fetched from [FRED](https://fred.stlouisfed.org/) (Federal Reserve Economic Data) through a Cloudflare Worker proxy (`cloudflare-worker/mortgage-rates-proxy.js`), since FRED's API does not support CORS for direct browser requests. The client-side service (`js/mortgage-rates.js`) includes:
+- Automatic caching (1-hour duration, both in the browser and at the Cloudflare edge)
 - Retry logic (3 attempts with exponential backoff)
 - Error handling and graceful fallbacks
 - Loading states and user feedback
-- Rate limiting to prevent API abuse
+
+### Cloudflare Worker Setup
+The Worker holds the FRED API key server-side so it's never exposed in browser code. To deploy or update it:
+
+1. Get a free FRED API key: https://fredaccount.stlouisfed.org/apikeys
+2. Deploy the worker:
+   ```bash
+   cd cloudflare-worker
+   npx wrangler deploy
+   npx wrangler secret put FRED_API_KEY   # paste your key when prompted
+   ```
+3. Update `BASE_URL` in `js/mortgage-rates.js` with your deployed `*.workers.dev` URL
+4. Update the `connect-src` directive in `index.html`'s CSP meta tags to match your Worker URL
+5. Narrow `ALLOWED_ORIGIN` in `mortgage-rates-proxy.js` to your site's real origin (e.g. `https://yourname.github.io`)
+
+Once deployed manually once, future changes to `cloudflare-worker/` auto-deploy via GitHub Actions (see below) — no need to run `wrangler deploy` by hand again.
 
 ### Validation Limits
 - **Mortgage Principal**: $1,000 - $10,000,000
@@ -142,9 +163,9 @@ The mortgage rates are fetched from API Ninjas. The service includes:
 - **Rent Amount**: $500 - $20,000
 
 ### Rate Estimation Logic
-- **15-Year Rate**: API rate or 30-year rate - 0.3%
-- **30-Year Rate**: Direct from API
-- **50-Year Rate**: 30-year rate + 0.5% (estimated)
+- **15-Year Rate**: FRED rate if available, otherwise 30-year rate - 0.5%
+- **30-Year Rate**: Direct from FRED
+- **50-Year Rate**: 30-year rate + 0.5% (estimated; FRED does not publish 50-year rates)
 
 ## 🌐 Live Demo
 
@@ -176,6 +197,19 @@ This project is configured for automatic GitHub Pages deployment:
 4. Choose "main" branch and "/ (root)" folder
 5. Your calculator will be live at `https://rgriola.github.io/financial-calculators/`
 
+## 🤖 CI/CD
+
+GitHub Actions automate quality checks and Worker deployment on every push (`.github/workflows/`):
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `ci.yml` | Every push/PR | Validates all JS files with `node --check`; scans the diff for accidentally committed secrets with gitleaks |
+| `deploy-cloudflare-worker.yml` | Push to `main` touching `cloudflare-worker/**`, or manual run | Deploys the mortgage-rates proxy Worker via `wrangler deploy` |
+
+The Worker deploy workflow needs two repository secrets (Settings → Secrets and variables → Actions):
+- `CLOUDFLARE_API_TOKEN` - created via the Cloudflare dashboard's "Edit Cloudflare Workers" token template
+- `CLOUDFLARE_ACCOUNT_ID` - found in the Cloudflare dashboard under Workers & Pages
+
 ## 🧪 Testing
 
 ### Manual Testing Checklist
@@ -197,7 +231,14 @@ Test across all supported browsers:
 
 ## 🏷️ Features by Version
 
-### v2.0 (Current)
+### v2.1 (Current)
+- ✅ Migrated mortgage rate data to FRED (Federal Reserve) via a secure Cloudflare Worker proxy
+- ✅ Eliminated all client-side API keys; added automated gitleaks secret scanning
+- ✅ Hardened CSP (removed `unsafe-inline` from `script-src`)
+- ✅ Added GitHub Actions CI/CD (JS syntax checks, secret scanning, automatic Worker deployment)
+- ✅ Removed dead code (`storage-manager.js`, unused loan-limit display formatter)
+
+### v2.0
 - ✅ Rent-to-mortgage calculator with multi-term comparison
 - ✅ Modular JavaScript architecture
 - ✅ Enhanced security with CSP compliance
@@ -231,7 +272,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **API Ninjas** - For providing reliable mortgage rate data
+- **FRED (Federal Reserve Economic Data)** - For providing free, authoritative mortgage rate data
+- **Cloudflare Workers** - For free edge-hosted proxying that keeps the API key secure
 - **Material Design Icons** - For UI icon inspiration
 - **MDN Web Docs** - For web standards reference and best practices
 
@@ -269,4 +311,4 @@ If you find a bug or have a feature request, please create an issue with:
 
 ---
 
-Built with ❤️ by [rgriola](https://github.com/rgriola) | Last updated: November 2024
+Built with ❤️ by [rgriola](https://github.com/rgriola) | Last updated: October 2026
