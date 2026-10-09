@@ -95,6 +95,21 @@ export const CreditCardCalculator = {
             }
         });
 
+        // Live input format restrictions, since `maxlength` and decimal
+        // restrictions have no effect on <input type="number"> in any
+        // browser - these must be enforced in JS on every keystroke.
+        // Registered before validation/auto-fill listeners so those always
+        // read the already-sanitized value.
+        if (this.elements.balanceInput) {
+            this.elements.balanceInput.addEventListener('input', () => this.restrictToWholeNumber(this.elements.balanceInput, 6));
+        }
+        if (this.elements.aprInput) {
+            this.elements.aprInput.addEventListener('input', () => this.restrictAPRFormat(this.elements.aprInput));
+        }
+        if (this.elements.monthlyPaymentInput) {
+            this.elements.monthlyPaymentInput.addEventListener('input', () => this.restrictToWholeNumber(this.elements.monthlyPaymentInput, 6));
+        }
+
         // Real-time validation with debouncing
         const debouncedValidate = Utils.debounce((input) => {
             this.validateInput(input);
@@ -132,6 +147,47 @@ export const CreditCardCalculator = {
     },
 
     /**
+     * Strip any non-digit characters (decimal points, signs, letters) and
+     * cap the result to maxDigits characters, enforcing whole-number-only
+     * input with a fixed maximum length in real time.
+     * @param {HTMLInputElement} input - Input element to restrict
+     * @param {number} maxDigits - Maximum number of digits allowed
+     */
+    restrictToWholeNumber: function (input, maxDigits) {
+        if (!input) return;
+        let digitsOnly = input.value.replace(/[^\d]/g, '').slice(0, maxDigits);
+        if (input.value !== digitsOnly) {
+            input.value = digitsOnly;
+        }
+    },
+
+    /**
+     * Restrict an APR input to the XX.xx format in real time: digits only,
+     * a single decimal point, at most 2 integer digits and 2 decimal digits.
+     * @param {HTMLInputElement} input - Input element to restrict
+     */
+    restrictAPRFormat: function (input) {
+        if (!input) return;
+
+        let value = input.value.replace(/[^\d.]/g, '');
+
+        // Collapse multiple decimal points down to the first one
+        const firstDotIndex = value.indexOf('.');
+        if (firstDotIndex !== -1) {
+            value = value.slice(0, firstDotIndex + 1) + value.slice(firstDotIndex + 1).replace(/\./g, '');
+        }
+
+        let [intPart, decPart] = value.split('.');
+        intPart = (intPart || '').slice(0, 2);
+        const hasDot = value.includes('.');
+        const restricted = hasDot ? `${intPart}.${(decPart || '').slice(0, 2)}` : intPart;
+
+        if (input.value !== restricted) {
+            input.value = restricted;
+        }
+    },
+
+    /**
      * Auto-fill the monthly payment field with the estimated card minimum
      * payment, based on the current balance and APR. Does nothing if either
      * field is empty/invalid, or if the user has already typed their own
@@ -149,7 +205,9 @@ export const CreditCardCalculator = {
         const monthlyRate = apr / 12 / 100;
         const estimatedMinPayment = this.estimateCardMinimumPayment(balance, monthlyRate);
 
-        this.elements.monthlyPaymentInput.value = estimatedMinPayment.toFixed(2);
+        // Payment field is whole-dollar only, so round up to ensure the
+        // auto-filled amount still meets (never falls short of) the estimate
+        this.elements.monthlyPaymentInput.value = Math.ceil(estimatedMinPayment).toString();
         this.validateInput(this.elements.monthlyPaymentInput);
     },
 

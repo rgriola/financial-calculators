@@ -35,17 +35,17 @@ export const ValidationConfig = {
     },
     creditBalance: {
         min: 0,
-        max: 1000000,
+        max: 999999,
         label: 'Credit Balance'
     },
     creditAPR: {
-        min: 0.01,
-        max: 99.99,
+        min: 1.25,
+        max: 29.99,
         label: 'APR'
     },
     creditPayment: {
         min: 1,
-        max: 100000,
+        max: 999999,
         label: 'Monthly Payment'
     },
     maxInputLength: 10
